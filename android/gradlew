@@ -1,0 +1,33 @@
+#!/usr/bin/env sh
+set -eu
+APP_HOME=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PROPS="$APP_HOME/gradle/wrapper/gradle-wrapper.properties"
+DIST_URL=$(sed -n 's/^distributionUrl=//p' "$PROPS" | sed 's/\\:/:/g' | sed 's/\\//g')
+DIST_NAME=$(printf '%s' "$DIST_URL" | sed 's#.*/##')
+GRADLE_VERSION=$(printf '%s' "$DIST_NAME" | sed -n 's/^gradle-\(.*\)-bin\.zip$/\1/p')
+CACHE_DIR="${GRADLE_USER_HOME:-$HOME/.gradle}/wrapper/dists/magnet-gradle-$GRADLE_VERSION"
+DIST_ZIP="$CACHE_DIR/$DIST_NAME"
+DIST_HOME="$CACHE_DIR/gradle-$GRADLE_VERSION"
+EXPECTED_SHA=$(sed -n 's/^distributionSha256Sum=//p' "$PROPS")
+if [ ! -x "$DIST_HOME/bin/gradle" ]; then
+  mkdir -p "$CACHE_DIR"
+  if [ ! -f "$DIST_ZIP" ]; then
+    if command -v curl >/dev/null 2>&1; then
+      curl --fail --location --retry 3 --output "$DIST_ZIP" "$DIST_URL"
+    elif command -v wget >/dev/null 2>&1; then
+      wget -O "$DIST_ZIP" "$DIST_URL"
+    else
+      echo "ERROR: curl or wget is required to bootstrap Gradle $GRADLE_VERSION" >&2
+      exit 1
+    fi
+  fi
+  if [ -n "$EXPECTED_SHA" ]; then
+    ACTUAL_SHA=$(sha256sum "$DIST_ZIP" | awk '{print $1}')
+    [ "$ACTUAL_SHA" = "$EXPECTED_SHA" ] || { echo "ERROR: Gradle distribution checksum mismatch" >&2; exit 1; }
+  fi
+  rm -rf "$DIST_HOME.tmp"
+  mkdir -p "$DIST_HOME.tmp"
+  unzip -q "$DIST_ZIP" -d "$DIST_HOME.tmp"
+  mv "$DIST_HOME.tmp/gradle-$GRADLE_VERSION" "$DIST_HOME"
+fi
+exec "$DIST_HOME/bin/gradle" "$@"

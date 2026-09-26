@@ -1,0 +1,44 @@
+version: 2.1
+
+jobs:
+  build-apk:
+    machine:
+      image: android:2024.11.1
+    resource_class: medium
+    steps:
+      - checkout
+      - run:
+          name: Verify Android toolchain
+          command: |
+            java -version
+            sdkmanager --version
+            sdkmanager --list | grep -E 'platforms;android-35|build-tools;35.0.0' | head -20
+      - run:
+          name: Static release QA
+          command: python3 tools/verify_release.py
+      - restore_cache:
+          keys:
+            - magnet-gradle-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
+            - magnet-gradle-v1-
+      - run:
+          name: Build debug APK
+          working_directory: android
+          command: ./gradlew --no-daemon --stacktrace :app:assembleDebug
+      - save_cache:
+          key: magnet-gradle-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
+          paths:
+            - ~/.gradle/caches
+            - ~/.gradle/wrapper
+      - run:
+          name: Verify APK artifact
+          command: |
+            test -s android/app/build/outputs/apk/debug/app-debug.apk
+            sha256sum android/app/build/outputs/apk/debug/app-debug.apk
+      - store_artifacts:
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          destination: MAGNET-debug.apk
+
+workflows:
+  build:
+    jobs:
+      - build-apk
