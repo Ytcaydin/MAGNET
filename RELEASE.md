@@ -1,3 +1,13 @@
+# MAGNET V5.7.1
+
+## İlk açılışta zorluk seçimi
+- Kullanıcı isteği: "Oyuncuya oyunu ilk actiginda zor/kolay secenekleri sunup bölümleri ona göre mi ayarlasak" — ilk açılışta oyuncuya Kolay/Zor seçtirip bölümleri ona göre ayarlama.
+- Yeni bir zorluk sistemi kurmak yerine, zaten V5.7.0'da test edilmiş **Zor Mod** mekaniği (yıldız barajı ~%25 sıkı, hareketli engeller %30 hızlı, ipucu kapalı) doğrudan kullanıldı — daha önce hiç test edilmemiş bölüm geometrisi riskine girilmedi.
+- Karşılama ekranına (`#welcomeOverlay`, yalnızca gerçek ilk açılışta gösterilir) "Nasıl oynamak istersin?" sorusu ve iki butonluk bir seçici eklendi: 🙂 KOLAY (standart) / 🔥 ZOR (az hamle · hızlı engel · ipucu yok).
+- Seçim anında `settings.hardMode`'a yazılıyor ve buton aktif durumu güncelleniyor; "BAŞLA"ya basıldığında `save()` ile kalıcı hale geliyor. Varsayılan seçili buton Kolay (`settings.hardMode` varsayılanı `false` ile birebir uyumlu).
+- Seçim kalıcı bir kilit değil — Ayarlar → Zor Mod her zaman olduğu gibi istenildiği an açılıp kapatılabiliyor.
+- Doğrulama: web/Android varlık paritesi, `tools/verify_release.py` → `tools/smoke_test.js` (PASS), Java stub derlemesi temiz; gerçek tarayıcıda karşılama ekranı ekran görüntüsüyle doğrulandı, ZOR seçilip BAŞLA'ya basıldığında `localStorage`'a kaydedilen `settings.hardMode`'ın `true` olduğu doğrulandı.
+
 # MAGNET V5.7.0
 
 ## Buz zemin (yeni engel türü) + Zor Mod
