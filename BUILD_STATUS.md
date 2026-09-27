@@ -1,10 +1,10 @@
-# Android Build Status — V5.4.1
+# Android Build Status — V5.4.2
 
-The Android project is configured for a portrait WebView game on Android API 35, with immersive system-bar handling, hardware-accelerated WebView rendering, local storage, pause/resume hooks, and the V5.4.1 game asset synchronized with the web build.
+The Android project is configured for a portrait WebView game on Android API 35, with immersive system-bar handling, hardware-accelerated WebView rendering, local storage, pause/resume hooks, and the V5.4.2 game asset synchronized with the web build.
 
-This packaging workspace does not contain the Android SDK or a system Gradle installation. V5.4.1 therefore does not claim a locally built APK.
+This packaging workspace does not contain the Android SDK or a system Gradle installation. V5.4.2 therefore does not claim a locally built APK.
 
-## V5.4.1 build path
+## V5.4.2 build path
 
 - Termux/Linux: `cd android && ./gradlew :app:assembleDebug`
 - CircleCI: `.circleci/config.yml` uses the Android machine image and runs the same `./gradlew` launcher.

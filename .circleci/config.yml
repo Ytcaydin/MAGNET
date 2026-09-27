@@ -42,6 +42,13 @@ jobs:
             unzip -o -q "$APK" assets/index.html -d /tmp/apkcheck || { echo "APK is missing assets/index.html"; grep -i asset /tmp/apkcheck/list.txt || true; exit 1; }
             cmp /tmp/apkcheck/assets/index.html web/index.html || { echo "APK game asset differs from web/index.html"; exit 1; }
             echo "APK contains assets/index.html identical to web/index.html"
+            unzip -o -q "$APK" 'classes*.dex' -d /tmp/apkcheck
+            for cls in com/magnet/game/MainActivity com/magnet/game/MagnetApp; do
+              grep -a -q -l "$cls" /tmp/apkcheck/classes*.dex || { echo "APK dex is missing $cls"; exit 1; }
+            done
+            echo "APK dex contains MainActivity and MagnetApp"
+            AAPT2=$(ls -d "${ANDROID_HOME:-$ANDROID_SDK_ROOT}"/build-tools/*/aapt2 2>/dev/null | tail -1)
+            if [ -n "$AAPT2" ]; then "$AAPT2" dump badging "$APK" > /tmp/apkcheck/badging.txt || true; head -20 /tmp/apkcheck/badging.txt || true; fi
             sha256sum "$APK"
       - store_artifacts:
           path: android/app/build/outputs/apk/debug/app-debug.apk

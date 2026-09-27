@@ -1,3 +1,15 @@
+# MAGNET V5.4.2
+
+## Android çökme teşhisi ve sağlamlaştırma
+- Cihazda "MAGNET sürekli olarak duruyor" (native çökme) raporu üzerine:
+- `MagnetApp` (Application) global çökme yakalayıcı kurar; stack trace `files/last_crash.txt`'ye yazılır.
+- `MainActivity` bir sonraki açılışta raporu yerel bir hata ekranında gösterir (KOPYALA, TEKRAR DENE) — adb gerekmez.
+- WebView oluşturma try/catch içinde; WebView yoksa/devre dışıysa çökme yerine açıklayıcı hata ekranı.
+- Renderer çökmesinde tek yeniden deneme, sonra hata ekranı (sonsuz recreate döngüsü yok).
+- Kaldırılan riskli çağrılar: `requestWindowFeature`, zorunlu `LAYER_TYPE_HARDWARE`, `setDecorFitsSystemWindows`, `setDatabaseEnabled`, `setContentView` öncesi insets çağrıları.
+- Tema: kanonik `@android:style/Theme.Material.NoActionBar` parent, geçersiz `fontFamily=sans` kaldırıldı.
+- CI: APK dex içinde `MainActivity` ve `MagnetApp` sınıfları doğrulanır; `aapt2 dump badging` çıktısı loglanır.
+
 # MAGNET V5.4.1
 
 ## Hotfix — oyun açılmıyordu
