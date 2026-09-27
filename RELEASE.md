@@ -1,3 +1,12 @@
+# MAGNET V5.7.4
+
+## Zor Mod daha da zorlaştı ve artık görsel olarak da belli
+- Kullanıcı geri bildirimi: "Zoru daha da zorlastiralim. İlk bölümden itibaren kullanıcı o zorluğu anlasın."
+- Sayısal sıkılaştırma: `HARD_STAR_MULT` 0.75 → 0.6, ve formüle sabit `-1` eklendi (`Math.max(2,Math.round(m*0.6)-1)`) — üst dünyalarda hamle payı belirgin şekilde daha düşük (örn. Bölüm 99: Kolay 16 → Zor 9, önceden 12'ydi). `HARD_MOVE_SPEED_MULT` 1.3 → 1.5 (hareketli engeller artık %50 daha hızlı).
+- Ekstra engel sayısı artık Bölüm 1'den itibaren **2** ile başlıyor (önceden Öğren dünyasında 1, diğerlerinde de 1'den başlıyordu), dünyaya göre üst sınır `[2,4,3,3,2]`'ye çıkarıldı (önceden `[1,3,2,2,1]`). Bölüm 1'de artık 2 ekstra engel var; Bölüm 30 gibi orta seviyelerde 3'e çıkıyor.
+- **Görsel ayrım (yeni):** Zor Mod'un eklediği ekstra engeller artık normal engellerden farklı, kırmızı/kiremit tonda (`#3a2430` dolgu, `#ff5f6d` kontur) çiziliyor. `applyHardTrack()` artık ürettiği ekstra engel sayısını `L.hardExtraCount` olarak bölüm verisine kaydediyor; `load()` bunu `hardExtraN`'e aktarıyor, `draw()` da `obstacles` dizisinin son `hardExtraN` elemanını (bunlar her zaman sona ekleniyor) ayrı renkte çiziyor. Böylece oyuncu bir bölümü ilk gördüğü anda, hamle sayısına bakmadan, hangi engellerin Zor Mod'a özel olduğunu görüyor.
+- Doğrulama: bağımsız Node scripti ile 100 bölümün tamamında ekstra engel sayısının beklenen değere ulaştığı, hiçbir engelin sınır dışına taşmadığı, ve Zor'un hamle payının Kolay'dan hiçbir bölümde gevşek olmadığı doğrulandı (0 hata). `tools/verify_release.py` → `tools/smoke_test.js` PASS (V5.7.3'te eklenen "easy vs hard tracks differ" testi bu daha sert farkı da onaylıyor). Gerçek tarayıcıda Bölüm 1 ve Bölüm 30'da Kolay/Zor karşılaştırmalı ekran görüntüsü alınarak kırmızı ekstra engellerin doğru göründüğü teyit edildi.
+
 # MAGNET V5.7.3
 
 ## Kolay ve Zor artık iki ayrı 100-bölümlük set
