@@ -1,4 +1,6 @@
-# MAGNET Android Build — V5.5.0
+# MAGNET Android Build — V5.6.0
+
+V5.6.0 adds one Gradle dependency, `com.google.android.play:review:2.0.2` (Play In-App Review), declared in `android/app/build.gradle`. No other native dependency was added; there is still no ads/analytics SDK and no INTERNET permission beyond what Play services and the review flow need at runtime.
 
 ## Termux
 

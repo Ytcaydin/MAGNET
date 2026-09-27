@@ -15,8 +15,8 @@ android {
         applicationId 'com.magnet.game'
         minSdk 23
         targetSdk 35
-        versionCode 41
-        versionName '5.5.0'
+        versionCode 42
+        versionName '5.6.0'
     }
 
     signingConfigs {
@@ -47,4 +47,9 @@ android {
             if (releaseSigningAvailable) signingConfig signingConfigs.release
         }
     }
+}
+
+dependencies {
+    // Google Play in-app review (dialog shown by the Play Store app; the game never sees the rating or text)
+    implementation 'com.google.android.play:review:2.0.2'
 }

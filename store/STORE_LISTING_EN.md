@@ -1,6 +1,7 @@
 # MAGNET — Store Copy (EN)
 
-> **Do not publish this English listing yet.** The game UI is currently Turkish only. Publishing an English listing for a Turkish-only game misleads players and invites 1-star reviews. Add English in-game text first (future localization stage), then add this as the en-US listing.
+> Play Console → Store presence → Main store listing → add translation **English (United States) – en-US**.
+> Since V5.6.0 the game UI is available in English (auto-selected from the phone language, switchable in Settings).
 
 **App name:** MAGNET: Magnetic Puzzle
 
@@ -19,15 +20,19 @@ Simple rules, clever solutions. Every world adds a new idea:
 • MOTION — Time your moves around sliding blocks.
 • MASTER — Gates, switches and several cores at once.
 
+New every day: the Daily Level gives you a fresh layout each day. Keep your streak alive and earn a bonus star.
+
 Features:
 • 100 levels across 5 worlds
+• A new Daily Level every day, with streaks
 • One-finger controls, short satisfying levels
 • 3-star rating by move count
 • Collectible magnet skins unlocked with stars
 • One hint per level when you are stuck
 • Sound and haptic feedback
+• English and Turkish
 • Fully offline, no internet needed
-• No ads, no account, no personal data collected
+• No ads, no account, no sign-up
 
 **Category:** Games → Puzzle
 **Contact email:** ytcaydin@gmail.com

@@ -1,3 +1,14 @@
+# MAGNET V5.6.0
+
+## Geri tuşu, İngilizce, Günün Bölümü, geri bildirim, değerlendirme
+- Android geri tuşu artık JS'e devrediliyor (`window.MAGNET_BACK()`): açık pencereleri sırayla kapatır, sonra "Çıkılsın mı?" onayı sorar; onaydan sonra uygulamadan çıkar. Native `onBackPressed()` yalnızca JS yanıt vermezse devreye girer.
+- Tam İngilizce arayüz: telefon diline göre otomatik seçim (TR/EN), Ayarlar'dan manuel değiştirme (`langBtn`), tüm metinler `I18N` sözlüğü üzerinden.
+- Günün Bölümü: her gün mevcut 100 bölümden biri seçilip aynalanarak yeni bir düzen gibi sunulur (tarihten türetilen sabit tohum, deterministik); ardışık gün serisi ayrı olarak tutulur.
+- Geri bildirim: Ayarlar'dan tek dokunuşla e-posta ile geri bildirim gönderme (native `ACTION_SENDTO` intent, web'de `mailto:` yedeği).
+- Uygulama içi değerlendirme: belirli bölümler ilk kez tamamlandığında Google Play'in resmi In-App Review akışı tetiklenir (`com.google.android.play:review:2.0.2`); değerlendirme diyaloğunun gösterilip gösterilmeyeceğine tamamen Play Store karar verir.
+- QA: `tools/smoke_test.js` dört yeni otomatik kontrolle genişletildi (geri tuşu akışı, 400 günlük Günün Bölümü geçerliliği/determinizmi, i18n anahtar tamlığı, İngilizce otomatik algılama).
+- Belgeler: gizlilik politikası (TR/EN) ve Data Safety taslağı yeni e-posta/geri bildirim akışını yansıtacak şekilde güncellendi.
+
 # MAGNET V5.5.0
 
 ## Play Store hazırlığı

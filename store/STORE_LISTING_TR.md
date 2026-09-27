@@ -19,15 +19,19 @@ Kurallar basit, çözümler değil. Her dünya yeni bir fikir getirir:
 • HAREKET — Kayan engellerin zamanlamasını yakala.
 • USTA — Kapılar, anahtarlar ve aynı anda birden fazla çekirdek.
 
+Her gün yeni: Günün Bölümü her gün farklı bir düzen sunar. Serini koru, bonus yıldız kazan.
+
 Özellikler:
 • 100 bölüm, 5 dünya
+• Her gün yeni bir Günün Bölümü ve seri sayacı
 • Tek parmakla kontrol, kısa ve tatmin edici bölümler
 • Hamle sayısına göre 3 yıldız, en iyi skorunu geliştir
 • Yıldızlarla açılan mıknatıs görünümleri koleksiyonu
 • Takıldığında bölüm başına bir ipucu
 • Ses ve titreşim geri bildirimi
+• Türkçe ve İngilizce
 • Tamamen çevrimdışı: internet gerekmez
-• Reklamsız, hesap gerektirmez, kişisel veri toplamaz
+• Reklamsız, hesap ve üyelik gerektirmez
 
 Otobüste, sırada ya da yatmadan önce birkaç bölüm: MAGNET kısa molalar için tasarlandı.
 

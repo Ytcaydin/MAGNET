@@ -14,11 +14,11 @@ subprocess.run(['node','--check',path],check=True)
 assert 'const levelQA=qaLevelData();' in s and 'refreshPlaytestUI();' in s
 m=re.search(r'versionName\s*=?\s*[\'\"]([^\'\"]+)',(ROOT/'android/app/build.gradle').read_text()); assert m
 assert 'PLAYTEST_MODE' in s and 'exportPlaytestData' in s and 'levelTuningSummary' in s and 'levelStat' in s
-assert 'versionCode 41' in (ROOT/'android/app/build.gradle').read_text()
+assert 'versionCode 42' in (ROOT/'android/app/build.gradle').read_text()
 rv=re.search(r"const RELEASE_VERSION='([^']+)'",s); assert rv and rv.group(1)==m.group(1), f'RELEASE_VERSION {rv and rv.group(1)} != versionName {m.group(1)}'
 # RELEASE_VERSION must be declared before any use (startup crashed in 5.4.0 because of this)
 assert s.index("const RELEASE_VERSION=") < s.index('RELEASE_VERSION', s.index('<script>')+1) + 1, 'RELEASE_VERSION used before declaration'
-assert 'restore();startSoftLaunchSession();' in s, 'session start must run right after restore() or it overwrites the save'
+assert re.search(r'\nrestore\(\);(?:applyI18n\(\);)?startSoftLaunchSession\(\);', s), 'session start must run right after restore() or it overwrites the save'
 subprocess.run(['node',str(ROOT/'tools/smoke_test.js')],check=True)
 res=ROOT/'android/app/src/main/res'
 assert (res/'mipmap/ic_launcher.xml').exists() and (res/'mipmap-anydpi-v26/ic_launcher.xml').exists(), 'launcher icon missing'

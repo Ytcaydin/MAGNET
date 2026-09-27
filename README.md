@@ -1,4 +1,4 @@
-# MAGNET v5.5.0
+# MAGNET v5.6.0
 
 Tek parmakla manyetik fizik bulmacası.
 
@@ -30,6 +30,7 @@ Tek parmakla manyetik fizik bulmacası.
 - V5.4.3 Arayüz düzeltmeleri — Ayarlar başlığı gerçek sürümü gösterir; üst bardaki yıldızlar mevcut bölümde kazanılanları gösterir.
 - V5.4.4 Uygulama ikonu ve sabit debug imzası — N/S mıknatıs + çekirdek adaptive ikon (Android 8+ ve eski sürümler), 512×512 mağaza ikonu (`store/icon-512.png`); CircleCI APK'ları artık birbirinin üzerine kurulabilir.
 - V5.5.0 Play Store hazırlığı — imzalı release AAB hattı (CircleCI, gizli değişkenlerle), gizlilik politikası TR/EN, mağaza metinleri, 1024×500 öne çıkan görsel, 6 ekran görüntüsü, Data Safety ve içerik derecelendirme yanıtları. Yol haritası: `PLAY_STORE_LAUNCH.md`.
+- V5.6.0 Geri tuşu + İngilizce + Günün Bölümü + geri bildirim + değerlendirme — Android geri tuşu artık pencereleri sırayla kapatıp en son çıkış onayı soruyor; oyun arayüzü Türkçe/İngilizce arasında otomatik algılama ve manuel seçimle çalışıyor; her gün mevcut bölümlerden biri yeniden karılıp "Günün Bölümü" olarak sunuluyor, seri sayacıyla; Ayarlar'dan e-posta ile geri bildirim gönderilebiliyor; Play Store'un uygulama içi değerlendirme akışı belirli bölümlerden sonra tetikleniyor. CI'daki runtime smoke test bu dört özelliği de otomatik doğruluyor.
 
 ## Kontrol standardı
 Her sürümden önce preflight; ardından en az iki bağımsız QA turu. Hata çıkarsa sürüm sunulmaz.

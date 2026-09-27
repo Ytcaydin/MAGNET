@@ -13,6 +13,22 @@ const m = html.match(/<script>([\s\S]*?)<\/script>/);
 if (!m) { console.error('FAIL: no inline <script> found'); process.exit(1); }
 const script = m[1];
 const ids = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map(x => x[1]);
+// Ids of elements carrying a given class, so the fake DOM can resolve class selectors
+// (e.g. document.querySelectorAll('.overlay')) used by closeAll().
+function idsWithClass(cls) {
+  const out = [];
+  const re = /<[a-zA-Z0-9]+\b([^>]*)>/g;
+  let mm;
+  while ((mm = re.exec(html))) {
+    const tag = mm[1];
+    const classMatch = tag.match(/\bclass=["']([^"']*)["']/);
+    if (!classMatch || !classMatch[1].split(/\s+/).includes(cls)) continue;
+    const idMatch = tag.match(/\bid=["']([^"']+)["']/);
+    if (idMatch) out.push(idMatch[1]);
+  }
+  return out;
+}
+const overlayIds = idsWithClass('overlay');
 
 function fake(name) {
   const store = Object.create(null);
@@ -57,7 +73,7 @@ function makeContext() {
   const doc = {
     getElementById: (id) => (ids.includes(id) ? el(id) : null),
     querySelector: (sel) => (sel.startsWith('#') && ids.includes(sel.slice(1)) ? el(sel.slice(1)) : fake(sel)),
-    querySelectorAll: (sel) => (sel.startsWith('#') ? [el(sel.slice(1))] : []),
+    querySelectorAll: (sel) => (sel.startsWith('#') ? [el(sel.slice(1))] : sel === '.overlay' ? overlayIds.map(el) : []),
     createElement: (t) => fake('<' + t + '>'),
     addEventListener: (n, f) => { (listeners['doc:' + n] = listeners['doc:' + n] || []).push(f); },
     body: fake('body'), documentElement: fake('html'), visibilityState: 'visible', hidden: false,
@@ -67,7 +83,7 @@ function makeContext() {
     Error, TypeError, RangeError, CanvasRenderingContext2D: function CanvasRenderingContext2D() {}, HTMLCanvasElement: function HTMLCanvasElement() {}, parseInt, parseFloat, isNaN, isFinite, Intl, Blob: function () {},
     URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} },
     URLSearchParams, document: doc, localStorage, sessionStorage: localStorage,
-    navigator: { onLine: true, vibrate: () => true, userAgent: 'smoke', serviceWorker: undefined },
+    navigator: { onLine: true, vibrate: () => true, userAgent: 'smoke', serviceWorker: undefined, language: currentLang, languages: [currentLang] },
     location: { search: '', href: 'file:///android_asset/index.html', protocol: 'file:', reload() {} },
     performance: { now: () => Date.now() },
     requestAnimationFrame: (f) => { rafQueue.push(f); return rafQueue.length; },
@@ -88,7 +104,9 @@ function guard(label, fn) { try { fn(); } catch (e) { errors.push(`${label}: ${e
 function frames(n) { for (let i = 0; i < n; i++) { const q = rafQueue; rafQueue = []; q.forEach((f) => guard('frame', () => f(Date.now() + i * 16))); } }
 function flushTimers() { for (let i = 0; i < 3; i++) { const q = timers.splice(0); q.forEach((f) => guard('timer', () => typeof f === 'function' && f())); } }
 
-function run(label) {
+let currentLang = 'tr-TR';
+function run(label, lang) {
+  currentLang = lang || 'tr-TR';
   rafQueue = []; timers.length = 0;
   const context = makeContext();
   guard(label + ' startup', () => vm.runInContext(script, context, { filename: 'index.html<script>' }));
@@ -116,6 +134,38 @@ c = run('warm');
 let restoredLevel;
 guard('restore', () => { restoredLevel = vm.runInContext('level', c); });
 if (savedLevel && restoredLevel !== savedLevel) errors.push(`save/restore: saved level ${savedLevel}, restored ${restoredLevel} (progress lost on launch)`);
+
+// 6) Android back button contract: always handled, closes overlays, then asks to quit
+guard('back button', () => {
+  const r = vm.runInContext(`closeAll();open('settingsOverlay');const a=MAGNET_BACK()&&isOpen('menuOverlay');const b=MAGNET_BACK()&&!isOpen('menuOverlay');const c2=MAGNET_BACK()&&isOpen('exitOverlay');const d=MAGNET_BACK()&&!isOpen('exitOverlay');[a,b,c2,d].join(',')`, c);
+  if (r !== 'true,true,true,true') errors.push('back button: unexpected overlay flow ' + r);
+});
+
+// 7) Daily level: 400 days generate valid geometry, deterministic, completing it never corrupts the saved level
+guard('daily level', () => {
+  const r = vm.runInContext(`(()=>{let bad=0;for(let i=0;i<400;i++){const d=new Date(2026,0,1);d.setDate(d.getDate()+i);const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');const L=makeDailyLevel(k);const inb=v=>v>0&&v<1;const ok=inb(L.start[0])&&inb(L.start[1])&&inb(L.target[0])&&inb(L.target[1])&&L.o.every(o=>o[0]>=0&&o[1]>=0&&o[0]+o[2]<=1.0001&&o[1]+o[3]<=1.0001)&&L.moving.every(m=>m.p[0]-m.amp>=-1e-6&&m.p[0]+m.amp+m.w<=1.0001&&m.p[1]-m.amp>=-1e-6&&m.p[1]+m.amp+m.h<=1.0001)&&(L.balls||[]).every(p=>inb(p[0])&&inb(p[1]))&&(L.targets||[]).every(p=>inb(p[0])&&inb(p[1]));if(!ok)bad++}
+    const det=JSON.stringify(makeDailyLevel('2026-09-27'))===JSON.stringify(makeDailyLevel('2026-09-27'));
+    for(let i=1;i<=12;i++)progress[i]={stars:3,best:3};load(12);startDaily();const wasDaily=level===DAILY_LEVEL;win();const saved=JSON.parse(localStorage.getItem('magnet_save')).level;const ds=dailyState();$('nextBtn').onclick();
+    return [bad,det,wasDaily,saved,ds.streak,level].join(',')})()`, c);
+  if (r !== '0,true,true,12,1,12') errors.push('daily level: ' + r + ' (expected 0,true,true,12,1,12)');
+});
+
+// 8) i18n: every data-i18n key and every t('key') literal exists in both languages; English auto-detected
+const htmlKeys = [...html.matchAll(/data-i18n="([^"]+)"/g)].map((x) => x[1]);
+const jsKeys = [...script.matchAll(/\bt\('([a-z0-9_]+)'\s*[,)]/g)].map((x) => x[1])
+  .concat([...script.matchAll(/\bt\(\w+\?'([a-z0-9_]+)':'([a-z0-9_]+)'\)/g)].flatMap((x) => [x[1], x[2]]))
+  .concat([...((script.match(/TUTORIAL_KEYS=\{([^}]*)\}/) || [])[1] || '').matchAll(/'([a-z0-9_]+)'/g)].map((x) => x[1]))
+  .concat(['w0', 'w1', 'w2', 'w3', 'w4']);
+guard('i18n keys', () => {
+  const missing = vm.runInContext(`(k)=>k.filter(x=>!I18N[x]||!I18N[x][0]||!I18N[x][1])`, c)([...new Set([...htmlKeys, ...jsKeys])]);
+  if (missing.length) errors.push('i18n: missing keys ' + missing.join(', '));
+});
+storage.clear();
+const en = run('english', 'en-US');
+guard('english', () => {
+  const r = vm.runInContext(`LANG+'|'+t('start')+'|'+t('w2')`, en);
+  if (r !== 'en|START|POLES') errors.push('english auto-detect: ' + r);
+});
 
 if (errors.length) { console.error('FAIL runtime smoke test'); errors.forEach((e) => console.error(' - ' + e)); process.exit(1); }
 console.log(`PASS runtime smoke test (ids ${ids.length}, saved level ${savedLevel}, restored ${restoredLevel})`);

@@ -3,7 +3,10 @@ package com.magnet.game;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
@@ -15,6 +18,8 @@ import android.view.ViewGroup;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
 import android.webkit.ConsoleMessage;
+import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.RenderProcessGoneDetail;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -24,6 +29,12 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.play.core.review.ReviewInfo;
+import com.google.android.play.core.review.ReviewManager;
+import com.google.android.play.core.review.ReviewManagerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -89,6 +100,7 @@ public class MainActivity extends Activity {
         web.setOverScrollMode(View.OVER_SCROLL_NEVER);
         web.setVerticalScrollBarEnabled(false);
         web.setHorizontalScrollBarEnabled(false);
+        web.addJavascriptInterface(new Bridge(), "MagnetAndroid");
         setContentView(web);
         applyImmersive();
         web.loadUrl("file:///android_asset/index.html");
@@ -205,7 +217,57 @@ public class MainActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
-        if (web != null && web.canGoBack()) web.goBack(); else super.onBackPressed();
+        if (web == null) { super.onBackPressed(); return; }
+        // Let the game close overlays / show its quit dialog; fall back to default only if JS did not handle it.
+        web.evaluateJavascript("(window.MAGNET_BACK && window.MAGNET_BACK()) ? '1' : '0'", new ValueCallback<String>() {
+            @Override public void onReceiveValue(String value) {
+                if (!"\"1\"".equals(value)) MainActivity.super.onBackPressed();
+            }
+        });
+    }
+
+    /** Minimal JS bridge exposed as window.MagnetAndroid (local asset page only). */
+    private final class Bridge {
+        @JavascriptInterface public void exitApp() {
+            runOnUiThread(new Runnable() { @Override public void run() { finish(); } });
+        }
+
+        @JavascriptInterface public boolean sendFeedback(String email, String subject, String body) {
+            try {
+                Intent i = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"));
+                i.putExtra(Intent.EXTRA_EMAIL, new String[] { email });
+                i.putExtra(Intent.EXTRA_SUBJECT, subject);
+                i.putExtra(Intent.EXTRA_TEXT, body + "\nAndroid " + Build.VERSION.RELEASE + " (API " + Build.VERSION.SDK_INT + ")");
+                i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(i);
+                return true;
+            } catch (ActivityNotFoundException e) {
+                return false;
+            } catch (Throwable e) {
+                Log.e(TAG, "sendFeedback", e);
+                return false;
+            }
+        }
+
+        @JavascriptInterface public void requestReview() {
+            runOnUiThread(new Runnable() { @Override public void run() { launchReview(); } });
+        }
+    }
+
+    /** Google Play in-app review; Play decides whether the dialog is actually shown (quota). Never blocks the game. */
+    private void launchReview() {
+        try {
+            final ReviewManager manager = ReviewManagerFactory.create(this);
+            manager.requestReviewFlow().addOnCompleteListener(new OnCompleteListener<ReviewInfo>() {
+                @Override public void onComplete(Task<ReviewInfo> task) {
+                    if (task.isSuccessful() && !isFinishing()) {
+                        try { manager.launchReviewFlow(MainActivity.this, task.getResult()); } catch (Throwable e) { Log.e(TAG, "launchReviewFlow", e); }
+                    }
+                }
+            });
+        } catch (Throwable e) {
+            Log.e(TAG, "requestReviewFlow", e);
+        }
     }
 
     @Override protected void onPause() {
