@@ -1,4 +1,13 @@
-# MAGNET V5.4.0
+# MAGNET V5.4.1
+
+## Hotfix — oyun açılmıyordu
+- **Açılış çökmesi:** `startSoftLaunchSession()` açılışta `const RELEASE_VERSION` tanımından önce çağrılıyordu → `ReferenceError`, script duruyordu ve oyun başlamıyordu. Sabit, script başına taşındı; değeri versionName ile eşitlendi (5.4.1).
+- **Menü butonu:** `renderMenu()` tanımlı değildi → menü açılmıyordu. Eklendi.
+- **Bildirimler:** `toast()` tanımlı değildi → ipucu, günlük ödül, koleksiyon butonları hata veriyordu. Eklendi.
+- **İlerleme kaybı:** Oturum başlangıcı `restore()`'dan önce `save()` çağırıyordu → her açılışta kayıt sıfırlanıyordu. Oturum artık kayıt geri yüklendikten sonra başlıyor.
+- **Android:** JS konsolu logcat'e yönlendirildi (`adb logcat -s MAGNET`), WebView renderer çökmesinde uygulama kendini yeniden oluşturuyor, API 27 stil özelliği `values-v27`'ye taşındı, `android/.gradle` önbelleği repodan çıkarıldı.
+- **CI:** `tools/smoke_test.js` oyunu sahte tarayıcı ortamında başlatır, tüm butonlara basar, 100 bölümü yükler, kazanma ve kayıt/geri yükleme akışını test eder. APK içindeki `assets/index.html` web sürümüyle karşılaştırılır.
+
 
 ## Android build pipeline
 - GitHub Actions yolu kaldırıldı.

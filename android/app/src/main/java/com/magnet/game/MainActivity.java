@@ -10,9 +10,14 @@ import android.view.WindowInsetsController;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
+import android.webkit.ConsoleMessage;
+import android.webkit.RenderProcessGoneDetail;
+import android.util.Log;
 import android.graphics.Color;
 
 public class MainActivity extends Activity {
+    private static final String TAG = "MAGNET";
     private WebView web;
 
     @Override public void onCreate(Bundle state) {
@@ -41,7 +46,23 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         }
-        web.setWebViewClient(new WebViewClient());
+        web.setWebViewClient(new WebViewClient() {
+            @Override public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+                // Recover instead of letting the whole app crash when the WebView renderer dies.
+                Log.e(TAG, "WebView renderer gone; recreating activity");
+                if (web != null) { if (web.getParent() instanceof android.view.ViewGroup) ((android.view.ViewGroup) web.getParent()).removeView(web); web.destroy(); web = null; }
+                recreate();
+                return true;
+            }
+        });
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override public boolean onConsoleMessage(ConsoleMessage m) {
+                // Forward JS console output to logcat (adb logcat -s MAGNET) for device debugging.
+                Log.println(m.messageLevel() == ConsoleMessage.MessageLevel.ERROR ? Log.ERROR : Log.INFO, TAG,
+                        m.message() + " @" + m.sourceId() + ":" + m.lineNumber());
+                return true;
+            }
+        });
         web.setOverScrollMode(WebView.OVER_SCROLL_NEVER);
         web.setVerticalScrollBarEnabled(false);
         web.setHorizontalScrollBarEnabled(false);

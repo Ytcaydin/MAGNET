@@ -1,4 +1,4 @@
-# MAGNET v5.4.0
+# MAGNET v5.4.1
 
 Tek parmakla manyetik fizik bulmacası.
 
@@ -25,6 +25,7 @@ Tek parmakla manyetik fizik bulmacası.
 - V5.2 Android device preparation — portrait WebView, immersive UI ve cihaz uyumluluğu.
 - V5.3 CI build preparation — Android build pipeline hazırlığı.
 - V5.4 Termux + CircleCI build path — Gradle 8.10.2 pinleme, CircleCI artifact build ve ortak `./gradlew` komutu.
+- V5.4.1 Açılış hatası düzeltmesi — oyun açılışta çöküyordu (`RELEASE_VERSION` tanımlanmadan kullanılıyordu), menü/ipucu butonları çalışmıyordu (`renderMenu`/`toast` eksikti), ilerleme her açılışta siliniyordu. CI'a Node tabanlı runtime smoke test eklendi.
 
 ## Kontrol standardı
 Her sürümden önce preflight; ardından en az iki bağımsız QA turu. Hata çıkarsa sürüm sunulmaz.

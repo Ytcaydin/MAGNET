@@ -46,6 +46,7 @@ let bumpers=[],gamePaused=false,magnetVelocity={x:0,y:0},lastPointer={x:0,y:0,t:
 const PLAYTEST_MODE = new URLSearchParams(location.search).get('playtest')==='1' || localStorage.getItem('magnet_playtest')==='1';
 const SOFT_LAUNCH_MODE = true;
 const SOFT_LAUNCH_VERSION = '2';
+const RELEASE_VERSION='5.4.1';
 let sessionStartedAt=Date.now();
 const skins={classic:{name:'Classic',stars:0,a:'#52b9ff',b:'#ff6170'},neon:{name:'Neon',stars:30,a:'#8b5cff',b:'#00f5d4'},gold:{name:'Gold',stars:60,a:'#ffd45a',b:'#fff1a8'},ice:{name:'Ice',stars:100,a:'#8ce8ff',b:'#dff9ff'},fire:{name:'Fire',stars:150,a:'#ff7043',b:'#ffcf66'},galaxy:{name:'Galaxy',stars:220,a:'#a86cff',b:'#4c6fff'},cyber:{name:'Cyber',stars:300,a:'#00e5ff',b:'#ff00a8'},toxic:{name:'Toxic',stars:400,a:'#9cff57',b:'#d8ff8a'},void:{name:'Void',stars:520,a:'#6e7280',b:'#20232b'},master:{name:'Master',stars:700,a:'#ffffff',b:'#52b9ff'}};
 const worlds=[{name:'ÖĞREN',sub:'Temel manyetik hareket'},{name:'ENGELLER',sub:'Duvarlar ve açı'},{name:'KUTUPLAR',sub:'Çekim ve itiş alanları'},{name:'HAREKET',sub:'Zamanlama ve hareketli engeller'},{name:'USTA',sub:'Tüm mekanikler'}];
@@ -193,6 +194,8 @@ function updateHUD(){$('moves').textContent=moves;$('levelHud').textContent=leve
 function setWorld(){let w=Math.floor((level-1)/20);$('worldText').textContent=`DÜNYA ${String(w+1).padStart(2,'0')} · ${worlds[w].name}`}
 function setTutorial(){let t='';if(level===1)t='1/10 · Parmağını basılı tut ve mıknatısı çekirdeğin yanına taşı.';else if(level===2)t='2/10 · Mıknatısı çekirdeğin önüne taşı; hedefe doğru yönlendir.';else if(level===3)t='3/10 · Duvara çarpmak yerine kenarından dolaş.';else if(level===4)t='4/10 · Aynı hareketi ters yönde tekrar dene.';else if(level===5)t='5/10 · Mıknatısı açıyla taşı; çekirdek engelin çevresinden geçsin.';else if(level===6)t='6/10 · Tek uzun hareket yerine iki kontrollü hamle yap.';else if(level===7)t='7/10 · İki duvar arasında açık koridoru bul.';else if(level===8)t='8/10 · Duvarların oluşturduğu rotayı önceden düşün.';else if(level===9)t='9/10 · Çekirdeğin momentumunu koruyarak dönüş yap.';else if(level===10)t='10/10 · Artık temel hareketi öğrendin. En az hamleyle bitir.';else if(level===11)t='Mavi mıknatıs çekirdeği kendine çeker.';else if(level===12)t='Kırmızı mıknatıs çekirdeği iter.';else if(level===16)t='Hareketli engelin açılacağı anı bekle.';else if(level===18)t='İki hareketli engel arasında zamanlama yap.';else if(level===20)t='Şimdi öğrendiğin her şeyi tek bölümde kullan.';else if(level===21)t='Duvarlar artık yolu değiştiriyor.';else if(level===31)t='Şimdi iki duvarı tek rotada birlikte kullan.';else if(level===41)t='Sabit mıknatıslar kendi kuvvet alanlarına sahip.';else if(level===51)t='Kutuplar artık rotanı değiştirebilir; kuvvet alanını kullan.';else if(level===61)t='Hareketli engelleri zamanla.';else if(level===71)t='Hareketli engellerde hız değil doğru an önemlidir.';else if(level===81)t='Son dünyada tüm mekanikler birleşiyor.';setHint(t)}
 function setHint(t){let h=$('hint');h.textContent=t;t?h.classList.add('show'):h.classList.remove('show')}
+let toastTimer=0;function toast(msg){const t=$('toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800)}
+function renderMenu(){const h=Math.min(highest(),100);$('progressText').textContent=`${h} / 100 · Bonus ⭐ ${bonusStars}`;$('overallProgress').style.width=`${h}%`}
 function pointer(e){let r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
 c.addEventListener('pointerdown',e=>{if(won)return;ensureAudio();let p=pointer(e);drag=true;firstMove=true;tutorialTimer=0;dragStart={x:p.x,y:p.y,t:performance.now()};c.setPointerCapture(e.pointerId);magnet.tx=clamp(p.x,28,W-28);magnet.ty=clamp(p.y,28,H-28);moves++;updateHUD();setHint('');$('gestureBtn').textContent='☝ HAREKET ETTİR · ÇEKİRDEĞİ YÖNLENDİR'});
 c.addEventListener('pointermove',e=>{if(!drag||won)return;let p=pointer(e);magnet.tx=clamp(p.x,28,W-28);magnet.ty=clamp(p.y,28,H-28)});
@@ -227,7 +230,7 @@ $('menuBtn').onclick=()=>{renderMenu();open('menuOverlay')};$('closeMenu').oncli
   bonusStars+=reward;
   track('daily_reward_claimed',{reward});
   save();updateHUD();toast('🎁 +3 BONUS YILDIZ');playTone(900,.14);vibe(25);
-};$('hintBtn').onclick=()=>{closeAll();requestHint()};$('hintResultBtn').onclick=()=>{closeAll();requestHint()};$('replayBtn').onclick=()=>{closeAll();load(level)};$('nextBtn').onclick=()=>{closeAll();load(level===100?1:level+1)};startSoftLaunchSession();
+};$('hintBtn').onclick=()=>{closeAll();requestHint()};$('hintResultBtn').onclick=()=>{closeAll();requestHint()};$('replayBtn').onclick=()=>{closeAll();load(level)};$('nextBtn').onclick=()=>{closeAll();load(level===100?1:level+1)};
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')endSoftLaunchSession();else if(document.visibilityState==='visible' && !gamePaused)startSoftLaunchSession()});window.addEventListener('beforeunload',endSoftLaunchSession);
 $('startBtn').onclick=()=>{if(!analytics.sessionStartedAt)startSoftLaunchSession();localStorage.setItem('magnet_started_v3','1');closeAll();ensureAudio()};$('exportDiagnosticsBtn').onclick=()=>{if(PLAYTEST_MODE)exportPlaytestData()};$('soundBtn').onclick=()=>{settings.sound=!settings.sound;save();renderSettings();ensureAudio()};$('vibeBtn').onclick=()=>{settings.vibe=!settings.vibe;save();renderSettings()};$('resetBtn').onclick=()=>{if(confirm('Tüm ilerleme ve koleksiyon sıfırlansın mı?')){localStorage.removeItem('magnet_save');location.reload()}};$('restart').onclick=()=>{ensureAudio();analytics.retries++;const ls=levelStat(level);ls.retries=(ls.retries||0)+1;ls.lastRetryAt=Date.now();track('retry',{level});baseLoad(level);bumpers=safeBumperCandidates()};
 
@@ -250,7 +253,6 @@ function requestAdBreak(levelNumber){
 function adSummary(){return {policyVersion:AD_POLICY_VERSION,intervalLevels:AD_INTERVAL_LEVELS,totalEligible:adState.totalEligible,totalShown:adState.totalShown,dailyRewardStars:DAILY_REWARDED_AMOUNT}}
 function softLaunchSummary(){return {version:RELEASE_VERSION,softLaunchVersion:SOFT_LAUNCH_VERSION,localOnly:true,sessions:analytics.sessions,levelsStarted:analytics.levelsStarted,levelsCompleted:analytics.levelsCompleted,retries:analytics.retries,hints:analytics.hints,events:{...analytics.events},levelTuning:levelTuningSummary(),ad:adSummary()}}
 /* ================= MAGNET RELEASE TRAIN ================= */
-const RELEASE_VERSION='5.1.0';
 function levelStat(n){const k=String(n);if(!analytics.levelStats)analytics.levelStats={};if(!analytics.levelStats[k])analytics.levelStats[k]={started:0,retries:0,completed:0,bestMoves:9999,lastStars:0};return analytics.levelStats[k]}
 function levelTuningSummary(){const rows=Object.entries(analytics.levelStats||{}).map(([n,v])=>({level:Number(n),started:v.started||0,retries:v.retries||0,completed:v.completed||0,bestMoves:v.bestMoves===9999?null:v.bestMoves,lastStars:v.lastStars||0,retryRate:(v.started||0)>0?Number(((v.retries||0)/(v.started||0)).toFixed(2)):0}));return {tracked:rows.length,hotspots:rows.filter(x=>x.completed===0&&x.retries>=2).sort((a,b)=>b.retries-a.retries).slice(0,15),levels:rows.sort((a,b)=>a.level-b.level)}}
 function localDay(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
@@ -288,7 +290,7 @@ window.MAGNET_ADS={showInterstitial:()=>({shown:false,reason:'No ad SDK connecte
 /* ====================================================== */
 
 const levelQA=qaLevelData();
-restore();refreshPlaytestUI();resize();if(!levelQA)console.error('MAGNET release contains invalid level data');load(level);if(!localStorage.getItem('magnet_started_v3'))open('welcomeOverlay');requestAnimationFrame(loop);
+restore();startSoftLaunchSession();refreshPlaytestUI();resize();if(!levelQA)console.error('MAGNET release contains invalid level data');load(level);if(!localStorage.getItem('magnet_started_v3'))open('welcomeOverlay');requestAnimationFrame(loop);
 </script>
 </body>
 </html>

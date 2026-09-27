@@ -14,8 +14,10 @@ jobs:
             sdkmanager --version
             sdkmanager --list | grep -E 'platforms;android-35|build-tools;35.0.0' | head -20
       - run:
-          name: Static release QA
-          command: python3 tools/verify_release.py
+          name: Static + runtime release QA
+          command: |
+            node --version
+            python3 tools/verify_release.py
       - restore_cache:
           keys:
             - magnet-gradle-v1-{{ checksum "android/gradle/wrapper/gradle-wrapper.properties" }}
@@ -32,8 +34,11 @@ jobs:
       - run:
           name: Verify APK artifact
           command: |
-            test -s android/app/build/outputs/apk/debug/app-debug.apk
-            sha256sum android/app/build/outputs/apk/debug/app-debug.apk
+            APK=android/app/build/outputs/apk/debug/app-debug.apk
+            test -s "$APK"
+            unzip -l "$APK" | grep -q 'assets/index.html' || { echo "APK is missing assets/index.html"; exit 1; }
+            unzip -p "$APK" assets/index.html | cmp - web/index.html || { echo "APK game asset differs from web/index.html"; exit 1; }
+            sha256sum "$APK"
       - store_artifacts:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           destination: MAGNET-debug.apk
