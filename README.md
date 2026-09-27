@@ -1,4 +1,4 @@
-# MAGNET v5.7.1
+# MAGNET v5.7.2
 
 Tek parmakla manyetik fizik bulmacası.
 
@@ -35,6 +35,7 @@ Tek parmakla manyetik fizik bulmacası.
 - V5.6.2 Temizlik — kullanıcıya hiç görünmeyen ama kodda "GÜNLÜK ÖDÜL · REKLAMLA KAZAN" diye duran, reklam SDK'sı olmadığı için hiçbir zaman çalışmayan eski menü butonu ve tüm ilgili kod/metin kaldırıldı. Günün Bölümü + seri sistemi zaten reklamsız, çalışan tek "günlük ödül" olarak kalıyor. Seviye-aralığı interstitial reklam kancası (kullanıcıya hiçbir şey göstermeyen, arka planda no-op sayaç) dokunulmadan kaldı.
 - V5.7.0 Buz zemin + Zor Mod — Hareket dünyasının son 5 bölümüne ve Usta dünyasının neredeyse tamamına (23 bölüm), çekirdeğin sürtünmesiz kaydığı buz zeminler eklendi (çarpışma yok, sadece momentum kontrolünü zorlaştırıyor — bölümleri asla çözülemez hale getirmiyor). Ayarlar'a isteğe bağlı "Zor Mod" eklendi: açıkken 3 yıldız için hamle payı ~%25 azalır, hareketli engeller %30 hızlanır, ipucu kullanılamaz. Zor Mod her an açılıp kapatılabilir, ilerlemeyi silmez.
 - V5.7.1 İlk Açılış Zorluk Seçimi — Karşılama ekranına "Nasıl oynamak istersin?" sorusu ve Kolay/Zor seçici eklendi. Seçim doğrudan mevcut Zor Mod ayarına yazılıyor (yeni bir zorluk sistemi değil, zaten test edilmiş Zor Mod mekaniğinin ilk açılışta sorulması). Varsayılan Kolay; seçim Ayarlar'dan istenildiği zaman değiştirilebilir.
+- V5.7.2 Zor Mod'da Ekstra Engeller — Zor Mod artık sadece hız/yıldız barajını değil, bölüm görünümünü de değiştiriyor: her bölüme (Öğren dünyası hariç) deterministik olarak 1-3 ek engel bloğu ekleniyor, dünyaya göre sayı sınırlı (Engeller ≤3, Kutuplar/Hareket ≤2, Usta ≤1). Ek engeller; başlangıç/hedef, mevcut engeller, buz zeminler, mıknatıslar, kapı/anahtar ve hareketli engellerin salınım alanından güvenli mesafede, çakışmasız yerleştiriliyor — hiçbir bölüm çözülemez hale gelmiyor. Kolay Mod'da bölümler hiç değişmiyor.
 
 ## Kontrol standardı
 Her sürümden önce preflight; ardından en az iki bağımsız QA turu. Hata çıkarsa sürüm sunulmaz.

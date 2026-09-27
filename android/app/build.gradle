@@ -15,8 +15,8 @@ android {
         applicationId 'com.magnet.game'
         minSdk 23
         targetSdk 35
-        versionCode 46
-        versionName '5.7.1'
+        versionCode 47
+        versionName '5.7.2'
     }
 
     signingConfigs {

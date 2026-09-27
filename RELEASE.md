@@ -1,3 +1,12 @@
+# MAGNET V5.7.2
+
+## Zor Mod'da ekstra engeller (bölüm görünümü artık farklı)
+- Kullanıcı geri bildirimi: "Benim istediğim zor modu seçtiğinde daha fazla engel olması. Kolay mod gibi aynı ekran olmasın" — V5.7.1'de Zor Mod yalnızca yıldız barajı/hız/ipucu gibi görünmez parametreleri değiştiriyordu, ekran Kolay Mod ile birebir aynıydı. Bu geri bildirimle Zor Mod artık gerçekten daha fazla, görünür engel ekliyor.
+- `hardExtraObstacles(q)`: her bölüm için `mulberry32`/`hashStr` ile tohumlanmış deterministik bir üretici, bölüme 1-3 arası ek dikdörtgen engel yerleştiriyor. Dünya bazlı üst sınır: Öğren (dünya 0) hiç engel almıyor (öğretim bozulmasın diye), Engeller ≤3, Kutuplar/Hareket ≤2, Usta ≤1 (zaten kapı/anahtar/buz/hareketli engel gibi mekanikleri çok olduğu için daha az).
+- Güvenlik: her aday engel; başlangıç/hedef/top(lar)/hedef(ler)den ≥0.11, sabit mıknatıslardan ≥0.09, kapı/anahtardan ≥0.06-0.09, mevcut engel/buz zeminlerden ve hareketli engellerin tüm salınım alanından ≥0.03 marj ile deneniyor; çakışan aday atlanıp yeniden deneniyor (bölüm başına en fazla 80 deneme). Bu, üretilen hiçbir ek engelin bölümü çözülemez hale getirmemesini sağlıyor.
+- Ek engeller `levels[]` dizisine değil, `load(n)` içinde `settings.hardMode` açıkken çalışma anında `obstacles` dizisine ekleniyor — Kolay Mod ve mevcut `qaLevelData()`/`smoke_test.js` bölüm-geometrisi testleri hiç etkilenmiyor.
+- Doğrulama: 100 bölümün tamamı için üretici Node'da bağımsız çalıştırıldı — 80 bölümde toplam 120 ek engel, sıfır yerleştirme hatası, sıfır sınır-dışı sonuç. Gerçek tarayıcıda Bölüm 30 (Engeller) ve Bölüm 77 (Hareket, buz+hareketli engelli) için Kolay/Zor karşılaştırmalı ekran görüntüsü alındı: Zor Mod'da görünür şekilde daha fazla engel var, hiçbiri geçidi kapatmıyor. `tools/verify_release.py` → `tools/smoke_test.js` PASS, Java stub derlemesi temiz.
+
 # MAGNET V5.7.1
 
 ## İlk açılışta zorluk seçimi
