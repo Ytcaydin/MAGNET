@@ -116,6 +116,13 @@ function run(label, lang) {
 
 // 1) Cold start
 let c = run('cold');
+// 1b) All 100 hand-authored levels must pass the game's own geometry QA (qaLevelData()),
+// not just "doesn't throw" — a level with an out-of-bounds obstacle/magnet/gate/mover
+// would otherwise pass every other check here and only be caught by eyeballing a screenshot.
+guard('level geometry QA', () => {
+  const ok = vm.runInContext('qaLevelData()', c);
+  if (!ok) errors.push('qaLevelData() reported invalid level geometry (see console output above)');
+});
 // 2) Click every button with a handler (skip destructive reset/export)
 const skip = /reset|export/i;
 for (const id of ids) {
