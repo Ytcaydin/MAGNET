@@ -36,8 +36,12 @@ jobs:
           command: |
             APK=android/app/build/outputs/apk/debug/app-debug.apk
             test -s "$APK"
-            unzip -l "$APK" | grep -q 'assets/index.html' || { echo "APK is missing assets/index.html"; exit 1; }
-            unzip -p "$APK" assets/index.html | cmp - web/index.html || { echo "APK game asset differs from web/index.html"; exit 1; }
+            # Extract to a file instead of piping (CircleCI runs bash -eo pipefail; grep -q + pipe causes false failures)
+            rm -rf /tmp/apkcheck && mkdir -p /tmp/apkcheck
+            unzip -l "$APK" > /tmp/apkcheck/list.txt
+            unzip -o -q "$APK" assets/index.html -d /tmp/apkcheck || { echo "APK is missing assets/index.html"; grep -i asset /tmp/apkcheck/list.txt || true; exit 1; }
+            cmp /tmp/apkcheck/assets/index.html web/index.html || { echo "APK game asset differs from web/index.html"; exit 1; }
+            echo "APK contains assets/index.html identical to web/index.html"
             sha256sum "$APK"
       - store_artifacts:
           path: android/app/build/outputs/apk/debug/app-debug.apk
