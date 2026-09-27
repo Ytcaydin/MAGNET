@@ -1,3 +1,18 @@
+# MAGNET V5.7.0
+
+## Buz zemin (yeni engel türü) + Zor Mod
+- Kullanıcı geri bildirimi: oynanış hâlâ basit geldi, zorlaştıralım; ayrıca yeni bir özellik istendi.
+- **Buz zemin (`L.ice`):** çarpışma yapmayan, dikdörtgen bir "kaygan bölge". Üzerindeyken çekirdeğin sürtünmesi `.022`'den `.55`'e çıkıyor (saniyede kalan hız oranı) — yani çekirdek çok daha uzun kayıyor, hedefte durdurmak zorlaşıyor. Çarpışma içermediği için hiçbir bölümü çözülemez hale getiremez; sadece momentum kontrolünü zorlaştırır.
+  - Hareket dünyasının son 5 bölümü (p≥15) ve Usta dünyasının p≥2 olan tüm bölümleri (toplam 23 bölüm) buz zemin içeriyor.
+  - `qaLevelData()` ve `tools/smoke_test.js`'e buz zemin sınır kontrolü eklendi; `makeDailyLevel()` aynalama mantığına da dahil edildi.
+  - Ölçüm: aynı başlangıç hızıyla 1 saniye sonra buzda ~29.7, normal zeminde ~5.2 hız kalıyor (~5.7×) — fark net hissediliyor.
+- **Zor Mod (Ayarlar → Zor Mod, isteğe bağlı, her an açılıp kapatılabilir):**
+  - 3 yıldız için hamle payı ~%25 azalır (`Math.max(2,Math.round(m*0.75))`).
+  - Tüm hareketli engellerin hızı %30 artar.
+  - İpucu tamamen kapanır ("Zor modda ipucu yok" uyarısı).
+  - Günün Bölümü dahil tüm bölümlerde geçerli; ilerlemeyi/kaydı etkilemez, sadece zorluğu değiştirir.
+- Doğrulama: web/Android parite, `tools/verify_release.py`, `tools/smoke_test.js` (PASS), Java stub derlemesi temiz; gerçek tarayıcıda buz sürtünmesi ve Zor Mod'un yıldız barajı/hareketli engel hızı/ipucu üzerindeki etkisi ölçülerek doğrulandı; 100 bölümün tamamı (buz dahil) geometri kontrolünden geçti.
+
 # MAGNET V5.6.2
 
 ## Kullanılmayan "günlük ödül · reklamla kazan" özelliğinin temizlenmesi

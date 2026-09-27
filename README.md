@@ -1,4 +1,4 @@
-# MAGNET v5.6.2
+# MAGNET v5.7.0
 
 Tek parmakla manyetik fizik bulmacası.
 
@@ -33,6 +33,7 @@ Tek parmakla manyetik fizik bulmacası.
 - V5.6.0 Geri tuşu + İngilizce + Günün Bölümü + geri bildirim + değerlendirme — Android geri tuşu artık pencereleri sırayla kapatıp en son çıkış onayı soruyor; oyun arayüzü Türkçe/İngilizce arasında otomatik algılama ve manuel seçimle çalışıyor; her gün mevcut bölümlerden biri yeniden karılıp "Günün Bölümü" olarak sunuluyor, seri sayacıyla; Ayarlar'dan e-posta ile geri bildirim gönderilebiliyor; Play Store'un uygulama içi değerlendirme akışı belirli bölümlerden sonra tetikleniyor. CI'daki runtime smoke test bu dört özelliği de otomatik doğruluyor.
 - V5.6.1 Zorluk ayarı (hafif) — Engeller/Kutuplar/Hareket/Usta dünyalarında 3 yıldız için gereken hamle sayısı biraz sıkılaştırıldı; Hareket ve Usta dünyalarındaki kayan engeller ~%8-10 daha hızlı; Kutuplar/Hareket/Usta dünyalarındaki ek mıknatıs/duvar/kapı zorlukları artık birkaç bölüm daha erken devreye giriyor (aynı, daha önce test edilmiş düzenler). Öğren dünyası (ilk 20 bölüm) değişmedi. 100 bölümün tümü geometri geçerliliği için yeniden doğrulandı.
 - V5.6.2 Temizlik — kullanıcıya hiç görünmeyen ama kodda "GÜNLÜK ÖDÜL · REKLAMLA KAZAN" diye duran, reklam SDK'sı olmadığı için hiçbir zaman çalışmayan eski menü butonu ve tüm ilgili kod/metin kaldırıldı. Günün Bölümü + seri sistemi zaten reklamsız, çalışan tek "günlük ödül" olarak kalıyor. Seviye-aralığı interstitial reklam kancası (kullanıcıya hiçbir şey göstermeyen, arka planda no-op sayaç) dokunulmadan kaldı.
+- V5.7.0 Buz zemin + Zor Mod — Hareket dünyasının son 5 bölümüne ve Usta dünyasının neredeyse tamamına (23 bölüm), çekirdeğin sürtünmesiz kaydığı buz zeminler eklendi (çarpışma yok, sadece momentum kontrolünü zorlaştırıyor — bölümleri asla çözülemez hale getirmiyor). Ayarlar'a isteğe bağlı "Zor Mod" eklendi: açıkken 3 yıldız için hamle payı ~%25 azalır, hareketli engeller %30 hızlanır, ipucu kullanılamaz. Zor Mod her an açılıp kapatılabilir, ilerlemeyi silmez.
 
 ## Kontrol standardı
 Her sürümden önce preflight; ardından en az iki bağımsız QA turu. Hata çıkarsa sürüm sunulmaz.
