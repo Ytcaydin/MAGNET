@@ -47,7 +47,7 @@ let bumpers=[],gamePaused=false,magnetVelocity={x:0,y:0},lastPointer={x:0,y:0,t:
 const PLAYTEST_MODE = new URLSearchParams(location.search).get('playtest')==='1' || localStorage.getItem('magnet_playtest')==='1';
 const SOFT_LAUNCH_MODE = true;
 const SOFT_LAUNCH_VERSION = '2';
-const RELEASE_VERSION='5.6.0';
+const RELEASE_VERSION='5.6.1';
 /* ================= I18N (TR / EN) ================= */
 const I18N={
 hud_moves:['HAMLE','MOVES'],hud_level:['BÖLÜM','LEVEL'],hud_daily:['GÜNLÜK','DAILY'],paused:['OYUN DURAKLATILDI','GAME PAUSED'],
@@ -173,7 +173,7 @@ function makeLevel(n){
       [[.24,.28,.055,.22],[.48,.50,.055,.22],[.72,.28,.055,.22]],
       [[.24,.50,.055,.22],[.48,.28,.055,.22],[.72,.50,.055,.22]]
     ];
-    addWalls(set[p]); L.m=4+Math.floor(p/5);
+    addWalls(set[p]); L.m=4+Math.floor(p/6);
   }
   if(w===2){
     // Polarity world: introduce one field, then alternating fields and route choices.
@@ -187,14 +187,14 @@ function makeLevel(n){
       [[.28,.56,.24,.055],[.56,.30,.24,.055]]
     ];
     addWalls(wallSets[p%10]);
-    const count=1+Math.floor(p/6);
+    const count=1+Math.floor(p/5);
     for(let i=0;i<count;i++){
       const x=.32+i*.16, y=(i%2)? .66:.34;
       L.fixed.push({p:[x,y],pol:(i+p)%2?'push':'pull'});
     }
-    if(p>=10){L.fixed.push({p:[.50,flip?.28:.72],pol:p%2?'pull':'push'});}
-    if(p>=15)addWalls(flip?[[.44,.16,.055,.22],[.44,.62,.055,.22]]:[[.56,.16,.055,.22],[.56,.62,.055,.22]]);
-    L.m=6+Math.floor(p/4);
+    if(p>=8){L.fixed.push({p:[.50,flip?.28:.72],pol:p%2?'pull':'push'});}
+    if(p>=12)addWalls(flip?[[.44,.16,.055,.22],[.44,.62,.055,.22]]:[[.56,.16,.055,.22],[.56,.62,.055,.22]]);
+    L.m=6+Math.floor(p/5);
   }
   if(w===3){
     // Motion world: one timing gate, then two moving blockers, then mixed timing.
@@ -211,23 +211,24 @@ function makeLevel(n){
       [{p:[.50,.36],w:.20,h:.045,axis:'x',amp:.17,speed:1.75},{p:[.50,.64],w:.20,h:.045,axis:'x',amp:.17,speed:1.55}],
       [{p:[.50,.34],w:.045,h:.20,axis:'y',amp:.16,speed:1.85},{p:[.50,.64],w:.045,h:.20,axis:'y',amp:.14,speed:1.65}]
     ];
-    L.moving=patterns[p%10];
-    if(p>=10)L.fixed=[{p:[.36,flip?.28:.72],pol:'pull'}];
-    if(p>=14)L.fixed.push({p:[.68,flip?.72:.28],pol:'push'});
-    if(p>=17)addWalls([[.46,.18,.055,.18],[.46,.64,.055,.18]]);
-    L.m=8+Math.floor(p/3);
+    // V5.6.1: ~8% faster than the base pattern for a slightly tighter timing window.
+    L.moving=patterns[p%10].map(mv=>({...mv,speed:+(mv.speed*1.08).toFixed(3)}));
+    if(p>=8)L.fixed=[{p:[.36,flip?.28:.72],pol:'pull'}];
+    if(p>=11)L.fixed.push({p:[.68,flip?.72:.28],pol:'push'});
+    if(p>=14)addWalls([[.46,.18,.055,.18],[.46,.64,.055,.18]]);
+    L.m=8+Math.floor(p/4);
   }
   if(w===4){
     // Master world: controlled combinations, ending with multi-core finale.
     addWalls([[.24,.18,.055,.24],[.24,.58,.055,.24],[.66,.30,.055,.40]]);
     L.fixed=[{p:[.34,flip?.68:.32],pol:'pull'},{p:[.70,flip?.32:.68],pol:'push'}];
-    L.moving=[{p:[.50,.50],w:.16,h:.045,axis:'x',amp:.16,speed:1.8+p*.018}];
-    if(p>=4){L.gate={p:[.46,.47],w:.16,h:.045};L.switch=[.18,.50]}
-    if(p>=8){L.fixed.push({p:[.50,flip?.26:.74],pol:'pull'});L.moving.push({p:[.50,flip?.70:.30],w:.045,h:.16,axis:'y',amp:.12,speed:2.0})}
-    if(p>=12){L.o.push([.42,.24,.055,.18],[.42,.58,.055,.18]);}
+    L.moving=[{p:[.50,.50],w:.16,h:.045,axis:'x',amp:.16,speed:1.95+p*.02}];
+    if(p>=3){L.gate={p:[.46,.47],w:.16,h:.045};L.switch=[.18,.50]}
+    if(p>=6){L.fixed.push({p:[.50,flip?.26:.74],pol:'pull'});L.moving.push({p:[.50,flip?.70:.30],w:.045,h:.16,axis:'y',amp:.12,speed:2.15})}
+    if(p>=9){L.o.push([.42,.24,.055,.18],[.42,.58,.055,.18]);}
     if(p>=10){L.balls=[[.12,.24],[.12,.76]];L.targets=[[.88,.24],[.88,.76]];}
     if(p>=15){L.balls=[[.12,.20],[.12,.50],[.12,.80]];L.targets=[[.88,.20],[.88,.50],[.88,.80]];L.fixed.push({p:[.58,flip?.70:.30],pol:'push'});}
-    L.m=10+Math.floor(p/2);
+    L.m=10+Math.floor(p/3);
   }
   return L
 }

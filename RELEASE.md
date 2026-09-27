@@ -1,3 +1,13 @@
+# MAGNET V5.6.1
+
+## Zorluk ayarı (hafif)
+- Kullanıcı geri bildirimi: oynanış iyi ama bölümler biraz daha zor olabilir.
+- Yıldız barajı: Engeller dünyasında hamle payı `4+p/6` (önceden `4+p/5`), Kutuplar `6+p/5` (önceden `6+p/4`), Hareket `8+p/4` (önceden `8+p/3`), Usta `10+p/3` (önceden `10+p/2`). Öğren dünyası (bölüm 1-20) dokunulmadı.
+- Hız: Hareket dünyasındaki kayan engeller ~%8 daha hızlı; Usta dünyasındaki kayan engeller temel hız ve artış katsayısı yükseltilerek biraz daha hızlı.
+- Erken zorluk: Kutuplar'da ekstra mıknatıs/duvar eşikleri (10→8, 15→12), Hareket'te ekstra mıknatıs/duvar eşikleri (10→8, 14→11, 17→14), Usta'da kapı/ekstra mıknatıs/duvar eşikleri (4→3, 8→6, 12→9) birkaç bölüm öne çekildi — hepsi zaten bu dosyada kullanılan, test edilmiş düzenler; yeni/test edilmemiş geometri eklenmedi.
+- Doğrulama: 100 bölümün tamamı için sınır/geçerlilik kontrolü (start/target/engel/hareketli engel aralıkları) yeniden çalıştırıldı, hiçbiri sınır dışına çıkmadı; `tools/verify_release.py` ve `tools/smoke_test.js` PASS.
+- `tools/verify_release.py` içindeki sabit `versionCode 42` kontrolü, her sürüm artışında elle güncellenmesi gereken kırılgan bir kontroldü; artık versionCode'un varlığını genel olarak doğruluyor.
+
 # MAGNET V5.6.0
 
 ## Geri tuşu, İngilizce, Günün Bölümü, geri bildirim, değerlendirme
