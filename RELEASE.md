@@ -1,3 +1,14 @@
+# MAGNET V5.5.0
+
+## Play Store hazırlığı
+- Release imzası: `android/app/build.gradle` yükleme anahtarını CircleCI ortam değişkenlerinden veya `android/keystore.properties`'ten okur (repoda anahtar yok).
+- CircleCI: değişkenler tanımlıysa `bundleRelease` → `release/app-release.aab`; debug anahtarıyla imzalanmışsa build başarısız olur. Değişkenler yoksa adım atlanır.
+- `tools/create_upload_key.sh`: Termux'ta yükleme anahtarı + CircleCI değerleri.
+- Gizlilik politikası TR/EN yeniden yazıldı (veri toplanmıyor, internet izni yok, iletişim e-postası, koyu mod).
+- Mağaza: TR metin (80 karakter sınırına uygun), EN metin (çeviri sonrası), Data Safety ve IARC yanıtları, `icon-512.png`, `feature-graphic-1024x500.png`, 6 adet 1080×1920 ekran görüntüsü.
+- Oyun: reklam SDK'sı yokken Günlük Ödül butonu gizlenir (`MAGNET_ADS.rewardedAvailable()`); menü başlığı hizalaması düzeltildi.
+- Belgeler: `PLAY_STORE_LAUNCH.md`, `RELEASE_SIGNING.md`.
+
 # MAGNET V5.4.4
 
 ## Uygulama ikonu

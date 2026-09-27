@@ -53,6 +53,28 @@ jobs:
       - store_artifacts:
           path: android/app/build/outputs/apk/debug/app-debug.apk
           destination: MAGNET-debug.apk
+      - run:
+          name: Build signed release AAB (only when upload key env vars are set)
+          working_directory: android
+          command: |
+            if [ -z "${MAGNET_UPLOAD_KEYSTORE_B64:-}" ] || [ -z "${MAGNET_UPLOAD_STORE_PASSWORD:-}" ] || [ -z "${MAGNET_UPLOAD_KEY_ALIAS:-}" ] || [ -z "${MAGNET_UPLOAD_KEY_PASSWORD:-}" ]; then
+              echo "Upload key env vars not set in CircleCI project settings; skipping release AAB (see RELEASE_SIGNING.md)."
+              mkdir -p app/build/outputs/bundle/release && echo "Release AAB skipped: upload key not configured. See RELEASE_SIGNING.md" > app/build/outputs/bundle/release/README.txt
+              exit 0
+            fi
+            echo "$MAGNET_UPLOAD_KEYSTORE_B64" | base64 -d > /tmp/magnet-upload.jks
+            export MAGNET_UPLOAD_STORE_FILE=/tmp/magnet-upload.jks
+            ./gradlew --no-daemon --stacktrace :app:bundleRelease
+            AAB=app/build/outputs/bundle/release/app-release.aab
+            test -s "$AAB"
+            # Must be signed with the upload key, not the debug key
+            jarsigner -verify -verbose -certs "$AAB" > /tmp/aab-verify.txt 2>&1 || { cat /tmp/aab-verify.txt; exit 1; }
+            if grep -q "CN=MAGNET Debug" /tmp/aab-verify.txt; then echo "AAB is signed with the DEBUG key"; exit 1; fi
+            sha256sum "$AAB"
+            rm -f /tmp/magnet-upload.jks
+      - store_artifacts:
+          path: android/app/build/outputs/bundle/release
+          destination: release
 
 workflows:
   build:

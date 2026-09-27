@@ -1,16 +1,22 @@
-# Android Build Status — V5.4.4
+# Android Build Status — V5.5.0
 
-The Android project is configured for a portrait WebView game on Android API 35, with immersive system-bar handling, hardware-accelerated WebView rendering, local storage, pause/resume hooks, and the V5.4.4 game asset synchronized with the web build.
+Portrait WebView game, Android API 35 (minSdk 23), no internet permission, no third-party SDKs.
 
-This packaging workspace does not contain the Android SDK or a system Gradle installation. V5.4.4 therefore does not claim a locally built APK.
+## Verified
+- CircleCI builds the debug APK on every push (`MAGNET-debug.apk` artifact), after static + runtime QA
+  (`tools/verify_release.py`, `tools/smoke_test.js`) and APK content checks.
+- V5.4.2 debug APK installed and played on a physical Android device (game, menu, settings working).
 
-## V5.4.4 build path
+## Build paths
+- CircleCI: `.circleci/config.yml`, Android machine image, `./gradlew :app:assembleDebug`.
+- Termux/Linux: `cd android && ./gradlew :app:assembleDebug`.
+- Pinned Gradle 8.10.2 via self-bootstrapping `android/gradlew` (no binary wrapper JAR in the repo).
+- Debug APK is signed with the committed debug-only key (`android/app/debug.keystore`) so new builds install over old ones.
 
-- Termux/Linux: `cd android && ./gradlew :app:assembleDebug`
-- CircleCI: `.circleci/config.yml` uses the Android machine image and runs the same `./gradlew` launcher.
-- Pinned Gradle distribution: 8.10.2 (`gradle/wrapper/gradle-wrapper.properties`).
-- APK output: `android/app/build/outputs/apk/debug/app-debug.apk`
+## Release AAB
+- Built by CircleCI only when the upload-key environment variables are configured (see `RELEASE_SIGNING.md`).
+- Not yet built: the upload key has not been created/configured.
 
-The launcher is a self-bootstrapping Gradle launcher rather than a checked-in `gradle-wrapper.jar`, because the packaging environment cannot generate or fetch binary wrapper artifacts. It still pins the exact Gradle distribution and caches it locally.
-
-After building, install the APK on a physical Android device and complete `DEVICE_QA.md` before calling device QA complete.
+## Pending
+- Device QA of the latest build per `DEVICE_QA.md`.
+- Signed AAB and Play Console steps per `PLAY_STORE_LAUNCH.md`.

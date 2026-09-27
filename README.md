@@ -1,4 +1,4 @@
-# MAGNET v5.4.4
+# MAGNET v5.5.0
 
 Tek parmakla manyetik fizik bulmacası.
 
@@ -25,16 +25,20 @@ Tek parmakla manyetik fizik bulmacası.
 - V5.2 Android device preparation — portrait WebView, immersive UI ve cihaz uyumluluğu.
 - V5.3 CI build preparation — Android build pipeline hazırlığı.
 - V5.4 Termux + CircleCI build path — Gradle 8.10.2 pinleme, CircleCI artifact build ve ortak `./gradlew` komutu.
-- V5.4.4 Açılış hatası düzeltmesi — oyun açılışta çöküyordu (`RELEASE_VERSION` tanımlanmadan kullanılıyordu), menü/ipucu butonları çalışmıyordu (`renderMenu`/`toast` eksikti), ilerleme her açılışta siliniyordu. CI'a Node tabanlı runtime smoke test eklendi.
-- V5.4.4 Android çökme teşhisi — uygulama çökerse hata raporu bir sonraki açılışta ekranda gösterilir (KOPYALA / TEKRAR DENE); WebView güvenli başlatılır; riskli pencere ayarları kaldırıldı. Cihazda açılış doğrulandı.
-- V5.4.4 Arayüz düzeltmeleri — Ayarlar başlığı gerçek sürümü gösterir; üst bardaki yıldızlar mevcut bölümde kazanılanları gösterir.
+- V5.4.1 Açılış hatası düzeltmesi — oyun açılışta çöküyordu (`RELEASE_VERSION` tanımlanmadan kullanılıyordu), menü/ipucu butonları çalışmıyordu (`renderMenu`/`toast` eksikti), ilerleme her açılışta siliniyordu. CI'a Node tabanlı runtime smoke test eklendi.
+- V5.4.2 Android çökme teşhisi — uygulama çökerse hata raporu bir sonraki açılışta ekranda gösterilir (KOPYALA / TEKRAR DENE); WebView güvenli başlatılır; riskli pencere ayarları kaldırıldı. Cihazda açılış doğrulandı.
+- V5.4.3 Arayüz düzeltmeleri — Ayarlar başlığı gerçek sürümü gösterir; üst bardaki yıldızlar mevcut bölümde kazanılanları gösterir.
 - V5.4.4 Uygulama ikonu ve sabit debug imzası — N/S mıknatıs + çekirdek adaptive ikon (Android 8+ ve eski sürümler), 512×512 mağaza ikonu (`store/icon-512.png`); CircleCI APK'ları artık birbirinin üzerine kurulabilir.
+- V5.5.0 Play Store hazırlığı — imzalı release AAB hattı (CircleCI, gizli değişkenlerle), gizlilik politikası TR/EN, mağaza metinleri, 1024×500 öne çıkan görsel, 6 ekran görüntüsü, Data Safety ve içerik derecelendirme yanıtları. Yol haritası: `PLAY_STORE_LAUNCH.md`.
 
 ## Kontrol standardı
 Her sürümden önce preflight; ardından en az iki bağımsız QA turu. Hata çıkarsa sürüm sunulmaz.
 
 ## Oynanış
 Basılı tut → mıknatısı hareket ettir → çekirdeği hedefe ulaştır.
+
+## Play Store
+Adım adım yayın planı `PLAY_STORE_LAUNCH.md`, imzalama `RELEASE_SIGNING.md`, mağaza dosyaları `store/` klasöründe.
 
 ## Android build
 Termux:

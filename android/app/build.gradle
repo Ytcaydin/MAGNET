@@ -1,5 +1,12 @@
 plugins { id 'com.android.application' }
 
+def localReleaseProps = new Properties()
+def localReleaseFile = rootProject.file('keystore.properties')
+if (localReleaseFile.exists()) localReleaseFile.withInputStream { localReleaseProps.load(it) }
+ext.releaseProp = { String key -> System.getenv(key) ?: localReleaseProps.getProperty(key) }
+ext.releaseSigningAvailable = ['MAGNET_UPLOAD_STORE_FILE', 'MAGNET_UPLOAD_STORE_PASSWORD', 'MAGNET_UPLOAD_KEY_ALIAS', 'MAGNET_UPLOAD_KEY_PASSWORD']
+        .every { releaseProp(it) } && file(releaseProp('MAGNET_UPLOAD_STORE_FILE')).exists()
+
 android {
     namespace 'com.magnet.game'
     compileSdk 35
@@ -8,8 +15,8 @@ android {
         applicationId 'com.magnet.game'
         minSdk 23
         targetSdk 35
-        versionCode 40
-        versionName '5.4.4'
+        versionCode 41
+        versionName '5.5.0'
     }
 
     signingConfigs {
@@ -21,9 +28,23 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // Play upload key: never committed. Provided by CircleCI env vars (see RELEASE_SIGNING.md)
+        // or by android/keystore.properties for local Termux builds.
+        if (releaseSigningAvailable) {
+            release {
+                storeFile file(releaseProp('MAGNET_UPLOAD_STORE_FILE'))
+                storePassword releaseProp('MAGNET_UPLOAD_STORE_PASSWORD')
+                keyAlias releaseProp('MAGNET_UPLOAD_KEY_ALIAS')
+                keyPassword releaseProp('MAGNET_UPLOAD_KEY_PASSWORD')
+            }
+        }
     }
 
     buildTypes {
         debug { signingConfig signingConfigs.debug }
+        release {
+            minifyEnabled false
+            if (releaseSigningAvailable) signingConfig signingConfigs.release
+        }
     }
 }

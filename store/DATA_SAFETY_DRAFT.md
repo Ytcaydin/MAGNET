@@ -1,12 +1,14 @@
-# Google Play Data Safety — Draft for V4.8.0
+# Google Play Data Safety — V5.5.0
 
-Based on the current source/build configuration, before any advertising SDK is added:
+Play Console → Uygulama içeriği → Veri güvenliği. Bu sürüm için önerilen yanıtlar (kaynak kodu ve manifest ile doğrulandı):
 
-- Does the app collect data? No remote collection is implemented.
-- Does the app share data with third parties? No remote sharing is implemented.
-- Is account creation required? No.
-- Is personal information requested from players? No.
-- Is gameplay progress stored? Yes, locally on the device.
-- Can users request deletion? Local progress can be deleted with Reset Progress; no server account exists.
+| Soru | Yanıt | Dayanak |
+|---|---|---|
+| Uygulamanız zorunlu kullanıcı verisi türlerinden herhangi birini topluyor veya paylaşıyor mu? | **Hayır** | İnternet izni yok (`AndroidManifest.xml`), ağ isteği yok, üçüncü taraf SDK yok |
+| Veriler aktarım sırasında şifreleniyor mu? | Soru "Hayır" yanıtında sorulmaz | Veri aktarımı yok |
+| Kullanıcılar verilerinin silinmesini isteyebilir mi? | Soru sorulmaz; yine de: Ayarlar → İlerlemeyi sıfırla / uygulamayı kaldırma | Yerel depolama |
+| Hesap oluşturma | Yok | — |
 
-Important: if an advertising SDK is added, this draft must be reviewed against that SDK's actual data practices before publishing.
+Notlar:
+- Oyun ilerlemesi ve anonim oyun sayaçları yalnızca cihazdaki WebView yerel depolamasında tutulur ve cihazdan çıkmaz. Google'ın tanımına göre cihazdan dışarı aktarılmayan veri "toplanan veri" sayılmaz.
+- **AdMob veya başka bir SDK eklenirse bu form baştan doldurulmalıdır** (reklam kimliği, cihaz kimlikleri, uygulama etkileşimleri vb.). Gizlilik politikası da güncellenmelidir.
