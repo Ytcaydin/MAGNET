@@ -9,7 +9,7 @@
 - [x] Privacy policy EN
 - [ ] Public HTTPS privacy-policy URL
 - [ ] Developer/support email
-- [ ] Final 512x512 store icon approval
+- [ ] Final 512x512 store icon approval (taslak: `store/icon-512.png`)
 - [ ] Feature graphic
 - [ ] Final screenshots from real device build
 - [ ] Content rating questionnaire

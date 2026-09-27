@@ -1,3 +1,16 @@
+# MAGNET V5.4.4
+
+## Uygulama ikonu
+- Adaptive launcher ikonu (vektör): koyu zemin, manyetik alan halkaları, N/S mıknatıs, gümüş çekirdek. `mipmap-anydpi-v26` (Android 8+) ve `mipmap` (Android 6–7) yedeği.
+- Mağaza ikonu: `store/icon-512.png` (kaynak: `store/icon.svg`).
+
+## Sabit debug imzası
+- `android/app/debug.keystore` repoya eklendi ve debug build'de kullanılıyor. CircleCI her build'de yeni rastgele debug anahtarı üretmediği için yeni APK eskisinin üzerine kurulur, ilerleme korunur.
+- Bu anahtar yalnızca debug içindir; Play Store için ayrı, gizli bir release anahtarı gerekir.
+
+## Temizlik
+- Eskimiş `web/README-v3.md` (Energy sistemi anlatan v3 prototip notu) ve bozuk `android/gradlew.bat` kaldırıldı.
+
 # MAGNET V5.4.3
 
 ## Arayüz

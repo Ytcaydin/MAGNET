@@ -1,5 +1,29 @@
 plugins { id 'com.android.application' }
 
-android { namespace 'com.magnet.game'; compileSdk 35
-    defaultConfig { applicationId 'com.magnet.game'; minSdk 23; targetSdk 35; versionCode 39; versionName '5.4.3' }
+android {
+    namespace 'com.magnet.game'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.magnet.game'
+        minSdk 23
+        targetSdk 35
+        versionCode 40
+        versionName '5.4.4'
+    }
+
+    signingConfigs {
+        // Fixed, committed DEBUG key so every CircleCI/Termux debug APK installs over the previous one
+        // (CI machines otherwise generate a new random debug key per build). Never use for Play releases.
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+
+    buildTypes {
+        debug { signingConfig signingConfigs.debug }
+    }
 }

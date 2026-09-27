@@ -46,7 +46,7 @@ let bumpers=[],gamePaused=false,magnetVelocity={x:0,y:0},lastPointer={x:0,y:0,t:
 const PLAYTEST_MODE = new URLSearchParams(location.search).get('playtest')==='1' || localStorage.getItem('magnet_playtest')==='1';
 const SOFT_LAUNCH_MODE = true;
 const SOFT_LAUNCH_VERSION = '2';
-const RELEASE_VERSION='5.4.3';
+const RELEASE_VERSION='5.4.4';
 let sessionStartedAt=Date.now();
 const skins={classic:{name:'Classic',stars:0,a:'#52b9ff',b:'#ff6170'},neon:{name:'Neon',stars:30,a:'#8b5cff',b:'#00f5d4'},gold:{name:'Gold',stars:60,a:'#ffd45a',b:'#fff1a8'},ice:{name:'Ice',stars:100,a:'#8ce8ff',b:'#dff9ff'},fire:{name:'Fire',stars:150,a:'#ff7043',b:'#ffcf66'},galaxy:{name:'Galaxy',stars:220,a:'#a86cff',b:'#4c6fff'},cyber:{name:'Cyber',stars:300,a:'#00e5ff',b:'#ff00a8'},toxic:{name:'Toxic',stars:400,a:'#9cff57',b:'#d8ff8a'},void:{name:'Void',stars:520,a:'#6e7280',b:'#20232b'},master:{name:'Master',stars:700,a:'#ffffff',b:'#52b9ff'}};
 const worlds=[{name:'ÖĞREN',sub:'Temel manyetik hareket'},{name:'ENGELLER',sub:'Duvarlar ve açı'},{name:'KUTUPLAR',sub:'Çekim ve itiş alanları'},{name:'HAREKET',sub:'Zamanlama ve hareketli engeller'},{name:'USTA',sub:'Tüm mekanikler'}];
