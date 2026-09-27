@@ -48,5 +48,5 @@ public class MagnetApp extends Application {
     }
 
     /** Version label without depending on generated BuildConfig. */
-    static final class BuildInfo { static final String VERSION = "5.6.1"; }
+    static final class BuildInfo { static final String VERSION = "5.6.2"; }
 }

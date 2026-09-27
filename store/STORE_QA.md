@@ -14,7 +14,7 @@
 
 ## Politika durumu
 - İnternet izni yok, ağ isteği yok, üçüncü taraf SDK yok
-- Reklam yok; ödüllü reklam butonu SDK yokken gizli
+- Reklam yok; kullanılmayan "günlük ödül · reklamla kazan" menü butonu ve ilgili kod V5.6.2'de tamamen kaldırıldı (Günün Bölümü zaten reklamsız günlük ödül sağlıyor); seviye-aralığı interstitial kancası (`requestAdBreak`) kullanıcıya hiçbir şey göstermeden arka planda no-op kalmaya devam ediyor
 - Satın alma / premium yok
 - Gizlilik politikası TR + EN, iletişim e-postası eklendi
 

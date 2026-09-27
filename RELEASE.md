@@ -1,3 +1,12 @@
+# MAGNET V5.6.2
+
+## Kullanılmayan "günlük ödül · reklamla kazan" özelliğinin temizlenmesi
+- Kullanıcı geri bildirimi: "Biz kullanıcıya günlük ödül olarak vaadediyoruz" — menüde `id="dailyBtn"` olarak duran, i18n metni "☀ GÜNLÜK ÖDÜL · REKLAMLA KAZAN" olan bir buton vardı. `window.MAGNET_ADS.rewardedAvailable()` her zaman `false` döndürdüğü için (reklam SDK'sı yok) `renderMenu()` bu butonu her zaman `display:none` yapıyordu — yani gerçek kullanıcılar bu vaadi hiç görmüyordu, ama kod kalıcı olarak orada duruyordu ve okuyan biri için kafa karıştırıcıydı.
+- Kaldırılanlar: `#dailyBtn` HTML elemanı, `onclick` işleyicisi (rewarded-ad akışı, `magnet_daily_reward_v1` localStorage anahtarı), `menu_daily_reward`/`reward_used`/`reward_unavail`/`reward_incomplete`/`reward_ok` i18n anahtarları, `DAILY_REWARDED_AMOUNT` sabiti, `window.MAGNET_ADS.rewardedAvailable`/`showRewarded` mock'ları.
+- Dokunulmayanlar: seviye-aralığı interstitial reklam kancası (`requestAdBreak`, `AD_INTERVAL_LEVELS`, `adState`) — bu tamamen arka planda, kullanıcıya hiçbir şey göstermeyen bir no-op sayaç, gelecekte bir reklam SDK'sı eklenirse kullanılabilir; yanlış bir vaat içermiyor.
+- Artık uygulamanın kullanıcıya verdiği tek "günlük ödül" vaadi, gerçekten çalışan Günün Bölümü + seri sistemi (+1 bonus yıldız, reklamsız).
+- Doğrulama: web/Android varlık paritesi, `tools/verify_release.py`, `tools/smoke_test.js` (PASS), menü gerçek tarayıcıda ekran görüntüsüyle doğrulandı (buton artık yok, 2×2 menü ızgarası düzgün).
+
 # MAGNET V5.6.1
 
 ## Zorluk ayarı (hafif)

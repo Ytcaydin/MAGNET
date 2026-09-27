@@ -29,7 +29,7 @@
 <div class="hud"><div class="pill"><span data-i18n="hud_moves">HAMLE</span> <b id="moves">0</b></div><div class="pill"><span id="levelLabel" data-i18n="hud_level">BÖLÜM</span> <b id="levelHud">1</b></div></div><div class="playtestBadge" id="playtestBadge">PLAYTEST</div>
 <div class="hint" id="hint"></div><div class="toast" id="toast"></div><div class="feedbackFlash" id="feedbackFlash"></div><div class="pauseBadge" id="pauseBadge" data-i18n="paused">OYUN DURAKLATILDI</div>
 <div class="overlay" id="result"><div class="card"><h1 id="resultTitle">BÖLÜM TAMAM</h1><p id="resultText"></p><div class="bigstars" id="resultStars">★★★</div><div class="stats"><div class="stat"><b id="statMoves">0</b><span data-i18n="stat_moves">Hamle</span></div><div class="stat"><b id="statBest">—</b><span data-i18n="stat_best">En iyi</span></div><div class="stat"><b id="statReward">+0</b><span data-i18n="stat_stars">Yıldız</span></div></div><button class="primary" id="nextBtn">SONRAKİ BÖLÜM</button><button class="secondary" id="replayBtn" data-i18n="replay">TEKRAR OYNA</button><button class="secondary" id="hintResultBtn" data-i18n="hint_btn">💡 İPUCU</button><div class="small" id="resultText2"></div></div></div>
-<div class="overlay" id="menuOverlay"><div class="card"><div class="toprow"><div><div class="brand">MAGNET</div><div class="world" data-i18n="tagline">TEK PARMAK FİZİK BULMACASI</div></div><button class="close" id="closeMenu">×</button></div><div class="progress"><i id="overallProgress"></i></div><div class="small" id="progressText">1 / 100</div><button class="menuBtn dailyLevelBtn" id="dailyLevelBtn">📅 GÜNÜN BÖLÜMÜ</button><div class="menuGrid"><button class="menuBtn" id="levelsBtn" data-i18n="menu_levels">▦ BÖLÜMLER</button><button class="menuBtn" id="shopBtn" data-i18n="menu_collection">✦ KOLEKSİYON</button><button class="menuBtn" id="dailyBtn" data-i18n="menu_daily_reward">☀ GÜNLÜK ÖDÜL · REKLAMLA KAZAN</button><button class="menuBtn" id="hintBtn" data-i18n="hint_btn">💡 İPUCU</button><button class="menuBtn" id="settingsBtn" data-i18n="menu_settings">⚙ AYARLAR</button></div><div class="tipBox"><b data-i18n="howto_title">Nasıl oynanır?</b><span class="small" data-i18n="howto_text">Parmağını ekranda tut ve mıknatısı hareket ettir. Çekirdek manyetik kuvveti takip eder. Hedefe ulaştır.</span></div></div></div>
+<div class="overlay" id="menuOverlay"><div class="card"><div class="toprow"><div><div class="brand">MAGNET</div><div class="world" data-i18n="tagline">TEK PARMAK FİZİK BULMACASI</div></div><button class="close" id="closeMenu">×</button></div><div class="progress"><i id="overallProgress"></i></div><div class="small" id="progressText">1 / 100</div><button class="menuBtn dailyLevelBtn" id="dailyLevelBtn">📅 GÜNÜN BÖLÜMÜ</button><div class="menuGrid"><button class="menuBtn" id="levelsBtn" data-i18n="menu_levels">▦ BÖLÜMLER</button><button class="menuBtn" id="shopBtn" data-i18n="menu_collection">✦ KOLEKSİYON</button><button class="menuBtn" id="hintBtn" data-i18n="hint_btn">💡 İPUCU</button><button class="menuBtn" id="settingsBtn" data-i18n="menu_settings">⚙ AYARLAR</button></div><div class="tipBox"><b data-i18n="howto_title">Nasıl oynanır?</b><span class="small" data-i18n="howto_text">Parmağını ekranda tut ve mıknatısı hareket ettir. Çekirdek manyetik kuvveti takip eder. Hedefe ulaştır.</span></div></div></div>
 <div class="overlay" id="levelOverlay"><div class="card"><div class="toprow"><div><div class="brand" data-i18n="levels_title">BÖLÜMLER</div><div class="world" data-i18n="levels_sub">5 DÜNYA · 100 BÖLÜM</div></div><button class="close" id="closeLevels">×</button></div><div class="worldTabs" id="worldTabs"></div><div class="levelGrid" id="levelGrid"></div></div></div>
 <div class="overlay" id="shopOverlay"><div class="card"><div class="toprow"><div><div class="brand" data-i18n="collection_title">KOLEKSİYON</div><div class="world"><span data-i18n="stars_label">YILDIZ</span> <span class="stars" id="shopStars">0</span></div></div><button class="close" id="closeShop">×</button></div><div class="skinGrid" id="shopGrid"></div></div></div>
 <div class="overlay" id="settingsOverlay"><div class="card"><div class="toprow"><div><div class="brand" data-i18n="settings_title">AYARLAR</div><div class="world" id="settingsVersion">MAGNET</div></div><button class="close" id="closeSettings">×</button></div><div class="row"><span data-i18n="set_sound">Ses</span><button class="toggle" id="soundBtn">AÇIK</button></div><div class="row"><span data-i18n="set_vibe">Titreşim</span><button class="toggle" id="vibeBtn">AÇIK</button></div><div class="row"><span>Dil / Language</span><button class="toggle" id="langBtn">TÜRKÇE</button></div><div class="row"><span data-i18n="set_feedback">Geri bildirim</span><button class="toggle" id="feedbackBtn" data-i18n="set_feedback_btn">GÖNDER</button></div><div class="row" id="diagnosticsRow"><span data-i18n="set_playtest">Playtest verisi</span><button class="toggle" id="exportDiagnosticsBtn" data-i18n="set_export">DIŞA AKTAR</button></div><div class="row"><span data-i18n="set_reset">İlerlemeyi sıfırla</span><button class="toggle danger" id="resetBtn" data-i18n="set_reset_btn">SIFIRLA</button></div><p class="small" data-i18n="set_offline">Oyun tamamen çevrimdışı çalışır.</p><div id="diagInfo"></div></div></div>
@@ -47,13 +47,13 @@ let bumpers=[],gamePaused=false,magnetVelocity={x:0,y:0},lastPointer={x:0,y:0,t:
 const PLAYTEST_MODE = new URLSearchParams(location.search).get('playtest')==='1' || localStorage.getItem('magnet_playtest')==='1';
 const SOFT_LAUNCH_MODE = true;
 const SOFT_LAUNCH_VERSION = '2';
-const RELEASE_VERSION='5.6.1';
+const RELEASE_VERSION='5.6.2';
 /* ================= I18N (TR / EN) ================= */
 const I18N={
 hud_moves:['HAMLE','MOVES'],hud_level:['BÖLÜM','LEVEL'],hud_daily:['GÜNLÜK','DAILY'],paused:['OYUN DURAKLATILDI','GAME PAUSED'],
 stat_moves:['Hamle','Moves'],stat_best:['En iyi','Best'],stat_stars:['Yıldız','Stars'],replay:['TEKRAR OYNA','PLAY AGAIN'],hint_btn:['💡 İPUCU','💡 HINT'],
 tagline:['TEK PARMAK FİZİK BULMACASI','ONE-FINGER PHYSICS PUZZLE'],menu_levels:['▦ BÖLÜMLER','▦ LEVELS'],menu_collection:['✦ KOLEKSİYON','✦ COLLECTION'],
-menu_daily_reward:['☀ GÜNLÜK ÖDÜL · REKLAMLA KAZAN','☀ DAILY REWARD · WATCH AD'],menu_settings:['⚙ AYARLAR','⚙ SETTINGS'],
+menu_settings:['⚙ AYARLAR','⚙ SETTINGS'],
 howto_title:['Nasıl oynanır?','How to play'],howto_text:['Parmağını ekranda tut ve mıknatısı hareket ettir. Çekirdek manyetik kuvveti takip eder. Hedefe ulaştır.','Hold your finger on the screen and move the magnet. The core follows the magnetic force. Guide it to the goal.'],
 levels_title:['BÖLÜMLER','LEVELS'],levels_sub:['5 DÜNYA · 100 BÖLÜM','5 WORLDS · 100 LEVELS'],collection_title:['KOLEKSİYON','COLLECTION'],stars_label:['YILDIZ','STARS'],
 settings_title:['AYARLAR','SETTINGS'],set_sound:['Ses','Sound'],set_vibe:['Titreşim','Vibration'],set_feedback:['Geri bildirim','Feedback'],set_feedback_btn:['GÖNDER','SEND'],
@@ -94,8 +94,6 @@ daily_locked:['Günün bölümü 10. bölümden sonra açılır','The daily leve
 daily_res_title:['GÜNÜN BÖLÜMÜ TAMAM','DAILY LEVEL COMPLETE'],daily_res_streak:['🔥 Seri: {n} gün · En iyi seri: {b}','🔥 Streak: {n} · Best streak: {b}'],
 daily_res_reward:['+1 bonus yıldız kazandın. Yarın yeni bölüm seni bekliyor.','You earned +1 bonus star. A new level awaits tomorrow.'],
 daily_res_again:['Bugünkü ödülü zaten aldın. Yarın yeni bölüm var.','You already got today’s reward. New level tomorrow.'],daily_res_back:['OYUNA DÖN','BACK TO GAME'],
-reward_used:['Günlük ödül zaten alındı','Daily reward already claimed'],reward_unavail:['Ödüllü reklam şu anda kullanılamıyor','Rewarded ad is not available right now'],
-reward_incomplete:['Reklam tamamlanmadı · ödül verilmedi','Ad not completed · no reward given'],reward_ok:['🎁 +3 BONUS YILDIZ','🎁 +3 BONUS STARS'],
 reset_confirm:['Tüm ilerleme ve koleksiyon sıfırlansın mı?','Reset all progress and collection?'],export_done:['Playtest verisi dışa aktarıldı','Playtest data exported'],
 feedback_subject:['MAGNET geri bildirim','MAGNET feedback'],feedback_intro:['Yorumun (isteğe bağlı):','Your comments (optional):'],
 feedback_note:['Aşağıdaki anonim oyun istatistikleri bölüm zorluğunu ayarlamama yardım eder. Göndermeden önce silebilir veya düzenleyebilirsin.','The anonymous game stats below help me tune level difficulty. You can delete or edit them before sending.'],
@@ -261,7 +259,7 @@ const TUTORIAL_KEYS={1:'tut1',2:'tut2',3:'tut3',4:'tut4',5:'tut5',6:'tut6',7:'tu
 function setTutorial(){if(level===DAILY_LEVEL){setHint(t('tut_daily'));setTimeout(()=>{if(level===DAILY_LEVEL&&!firstMove)setHint('')},2600);return}setHint(TUTORIAL_KEYS[level]?t(TUTORIAL_KEYS[level]):'')}
 function setHint(t){let h=$('hint');h.textContent=t;t?h.classList.add('show'):h.classList.remove('show')}
 let toastTimer=0;function toast(msg){const t=$('toast');if(!t)return;t.textContent=msg;t.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1800)}
-function renderMenu(){renderDailyButton();const ads=window.MAGNET_ADS;$('dailyBtn').style.display=(ads&&typeof ads.rewardedAvailable==='function'&&ads.rewardedAvailable())?'':'none';const h=Math.min(highest(),100);$('progressText').textContent=t('progress',{h,b:bonusStars});$('overallProgress').style.width=`${h}%`}
+function renderMenu(){renderDailyButton();const h=Math.min(highest(),100);$('progressText').textContent=t('progress',{h,b:bonusStars});$('overallProgress').style.width=`${h}%`}
 function pointer(e){let r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
 c.addEventListener('pointerdown',e=>{if(won)return;ensureAudio();let p=pointer(e);drag=true;firstMove=true;tutorialTimer=0;dragStart={x:p.x,y:p.y,t:performance.now()};c.setPointerCapture(e.pointerId);magnet.tx=clamp(p.x,28,W-28);magnet.ty=clamp(p.y,28,H-28);moves++;updateHUD();setHint('');$('gestureBtn').textContent=t('gesture_drag')});
 c.addEventListener('pointermove',e=>{if(!drag||won)return;let p=pointer(e);magnet.tx=clamp(p.x,28,W-28);magnet.ty=clamp(p.y,28,H-28)});
@@ -282,28 +280,13 @@ function renderLevels(world=0){$('worldTabs').innerHTML=worlds.map((x,i)=>`<butt
 function renderShop(){$('shopStars').textContent=totalStars();let g=$('shopGrid');g.innerHTML='';Object.entries(skins).forEach(([id,s])=>{let owned=totalStars()>=s.stars;let active=skin===id;let d=document.createElement('div');d.className='skin';d.innerHTML=`<div class="orb" style="background:linear-gradient(90deg,${s.a} 50%,${s.b} 50%);box-shadow:0 0 20px ${s.a}66"></div><b>${s.name}</b><small>${active?t('skin_equipped'):owned?t('skin_unlocked'):'⭐ '+s.stars}</small><button>${active?t('skin_active'):owned?t('skin_equip'):t('skin_locked')}</button>`;d.querySelector('button').onclick=()=>{if(!owned||active)return;skin=id;save();renderShop();toast(t('skin_toast',{s:s.name}));playTone(760,.1)};g.appendChild(d)})}
 function renderSettings(){$('soundBtn').textContent=settings.sound?t('on'):t('off');$('vibeBtn').textContent=settings.vibe?t('on'):t('off');$('langBtn').textContent=t('lang_name');$('diagInfo').innerHTML=renderDiagnostics()}
 function requestHint(){if(hintUsed){toast(t('hint_used'));return}hintUsed=true;let b=balls.find(x=>!x.done);if(!b)return;let dx=b.x-magnet.x,dy=b.y-magnet.y;magnet.tx=clamp(b.x-dx*.35,30,W-30);magnet.ty=clamp(b.y-dy*.35,30,H-30);setHint(t('hint_side'));setTimeout(()=>setHint(''),2800);toast(t('hint_shown'));vibe(10)}
-$('menuBtn').onclick=()=>{renderMenu();open('menuOverlay')};$('closeMenu').onclick=closeAll;$('levelsBtn').onclick=()=>{closeAll();renderLevels(Math.floor((level-1)/20));open('levelOverlay')};$('closeLevels').onclick=closeAll;$('shopBtn').onclick=()=>{closeAll();renderShop();open('shopOverlay')};$('closeShop').onclick=closeAll;$('settingsBtn').onclick=()=>{closeAll();renderSettings();open('settingsOverlay')};$('closeSettings').onclick=closeAll;$('dailyBtn').onclick=()=>{
-  const key='magnet_daily_reward_v1',today=localDay(),last=localStorage.getItem(key);
-  if(last===today){toast(t('reward_used'));return;}
-  const api=window.MAGNET_ADS;
-  if(!api||typeof api.showRewarded!=='function'){toast(t('reward_unavail'));return;}
-  const result=api.showRewarded({reason:'daily_reward',reward:{type:'stars',amount:3}});
-  if(!result||!result.completed){toast(t('reward_incomplete'));return;}
-  localStorage.setItem(key,today);
-  const reward=3;
-  const next=Math.min(100,highest());
-  progress[next]={stars:Math.max(progress[next]?.stars||0,1),best:progress[next]?.best||999};
-  bonusStars+=reward;
-  track('daily_reward_claimed',{reward});
-  save();updateHUD();toast(t('reward_ok'));playTone(900,.14);vibe(25);
-};$('hintBtn').onclick=()=>{closeAll();requestHint()};$('hintResultBtn').onclick=()=>{closeAll();requestHint()};$('replayBtn').onclick=()=>{closeAll();load(level)};$('nextBtn').onclick=()=>{closeAll();maybeRequestReview();if(level===DAILY_LEVEL){load(dailyReturnLevel);return}load(level===100?1:level+1)};
+$('menuBtn').onclick=()=>{renderMenu();open('menuOverlay')};$('closeMenu').onclick=closeAll;$('levelsBtn').onclick=()=>{closeAll();renderLevels(Math.floor((level-1)/20));open('levelOverlay')};$('closeLevels').onclick=closeAll;$('shopBtn').onclick=()=>{closeAll();renderShop();open('shopOverlay')};$('closeShop').onclick=closeAll;$('settingsBtn').onclick=()=>{closeAll();renderSettings();open('settingsOverlay')};$('closeSettings').onclick=closeAll;$('hintBtn').onclick=()=>{closeAll();requestHint()};$('hintResultBtn').onclick=()=>{closeAll();requestHint()};$('replayBtn').onclick=()=>{closeAll();load(level)};$('nextBtn').onclick=()=>{closeAll();maybeRequestReview();if(level===DAILY_LEVEL){load(dailyReturnLevel);return}load(level===100?1:level+1)};
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')endSoftLaunchSession();else if(document.visibilityState==='visible' && !gamePaused)startSoftLaunchSession()});window.addEventListener('beforeunload',endSoftLaunchSession);
 $('startBtn').onclick=()=>{if(!analytics.sessionStartedAt)startSoftLaunchSession();localStorage.setItem('magnet_started_v3','1');closeAll();ensureAudio()};$('exportDiagnosticsBtn').onclick=()=>{if(PLAYTEST_MODE)exportPlaytestData()};$('soundBtn').onclick=()=>{settings.sound=!settings.sound;save();renderSettings();ensureAudio()};$('vibeBtn').onclick=()=>{settings.vibe=!settings.vibe;save();renderSettings()};$('langBtn').onclick=()=>{setLang(LANG==='tr'?'en':'tr');renderSettings();toast(t('lang_changed'))};$('resetBtn').onclick=()=>{if(confirm(t('reset_confirm'))){localStorage.removeItem('magnet_save');location.reload()}};$('restart').onclick=()=>{ensureAudio();analytics.retries++;const ls=levelStat(level);ls.retries=(ls.retries||0)+1;ls.lastRetryAt=Date.now();track('retry',{level});baseLoad(level);bumpers=safeBumperCandidates()};
 
 /* ================= MAGNET V4.7 AD POLICY ================= */
 const AD_POLICY_VERSION='2';
 const AD_INTERVAL_LEVELS=5;
-const DAILY_REWARDED_AMOUNT=3;
 const adState={completedSinceAd:0,totalEligible:0,totalShown:0};
 function adEligible(levelNumber){return levelNumber>0 && levelNumber%AD_INTERVAL_LEVELS===0;}
 function requestAdBreak(levelNumber){
@@ -316,7 +299,7 @@ function requestAdBreak(levelNumber){
   }
   return {eligible:true,shown:false,reason:'No ad SDK connected'};
 }
-function adSummary(){return {policyVersion:AD_POLICY_VERSION,intervalLevels:AD_INTERVAL_LEVELS,totalEligible:adState.totalEligible,totalShown:adState.totalShown,dailyRewardStars:DAILY_REWARDED_AMOUNT}}
+function adSummary(){return {policyVersion:AD_POLICY_VERSION,intervalLevels:AD_INTERVAL_LEVELS,totalEligible:adState.totalEligible,totalShown:adState.totalShown}}
 function softLaunchSummary(){return {version:RELEASE_VERSION,softLaunchVersion:SOFT_LAUNCH_VERSION,localOnly:true,sessions:analytics.sessions,levelsStarted:analytics.levelsStarted,levelsCompleted:analytics.levelsCompleted,retries:analytics.retries,hints:analytics.hints,events:{...analytics.events},levelTuning:levelTuningSummary(),ad:adSummary()}}
 /* ================= MAGNET RELEASE TRAIN ================= */
 function levelStat(n){const k=String(n);if(!analytics.levelStats)analytics.levelStats={};if(!analytics.levelStats[k])analytics.levelStats[k]={started:0,retries:0,completed:0,bestMoves:9999,lastStars:0};return analytics.levelStats[k]}
@@ -352,7 +335,7 @@ function exportPlaytestData(){const payload={version:RELEASE_VERSION,exportedAt:
 window.MAGNET_DIAGNOSTICS={version:RELEASE_VERSION,getState:()=>({level,moves,progress,analytics,paused:gamePaused,bumpers:bumpers.length}),getTuning:levelTuningSummary};
 window.MAGNET_APP_PAUSE=()=>{if(!gamePaused){gamePaused=true;$('pauseBadge').classList.add('show');}};
 window.MAGNET_APP_RESUME=()=>{if(gamePaused){gamePaused=false;$('pauseBadge').classList.remove('show');prev=performance.now();}};
-window.MAGNET_ADS={rewardedAvailable:()=>false,showInterstitial:()=>({shown:false,reason:'No ad SDK connected'}),showRewarded:()=>({completed:false,reason:'No rewarded ad SDK connected'}),getPolicy:()=>({intervalLevels:AD_INTERVAL_LEVELS,dailyRewarded:true,dailyRewardStars:DAILY_REWARDED_AMOUNT})};
+window.MAGNET_ADS={showInterstitial:()=>({shown:false,reason:'No ad SDK connected'}),getPolicy:()=>({intervalLevels:AD_INTERVAL_LEVELS})};
 /* ====================================================== */
 
 /* ================= V5.6 FEATURES: back button, daily level, feedback, review ================= */
