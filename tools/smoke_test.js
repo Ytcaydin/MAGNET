@@ -120,11 +120,48 @@ let c = run('cold');
 // not just "doesn't throw" — a level with an out-of-bounds obstacle/magnet/gate/mover
 // would otherwise pass every other check here and only be caught by eyeballing a screenshot.
 guard('level geometry QA', () => {
-  const ok = vm.runInContext('qaLevelData()', c);
-  if (!ok) errors.push('qaLevelData() reported invalid level geometry (see console output above)');
+  const okEasy = vm.runInContext('qaLevelData(easyLevels)', c);
+  const okHard = vm.runInContext('qaLevelData(hardLevels)', c);
+  if (!okEasy) errors.push('qaLevelData(easyLevels) reported invalid level geometry (see console output above)');
+  if (!okHard) errors.push('qaLevelData(hardLevels) reported invalid level geometry (see console output above)');
+});
+// 1c) Easy and Hard must actually be two different tracks, not the same 100 levels with a flag:
+// Hard should have a tighter (or equal, for the untouched tutorial world) move limit and, from world 1
+// onward, at least as many obstacle blocks as Easy on every level, with some levels strictly harder.
+guard('easy vs hard tracks differ', () => {
+  const r = vm.runInContext(`(()=>{
+    let tighterM=0, moreObstacles=0, anyLooserM=false, anyFewerObstacles=false;
+    for(let i=0;i<100;i++){
+      const e=easyLevels[i], h=hardLevels[i];
+      if(h.m<e.m) tighterM++;
+      if(h.m>e.m) anyLooserM=true;
+      if(h.o.length>e.o.length) moreObstacles++;
+      if(h.o.length<e.o.length) anyFewerObstacles=true;
+    }
+    return [tighterM,moreObstacles,anyLooserM,anyFewerObstacles].join(',');
+  })()`, c);
+  const [tighterM, moreObstacles, anyLooserM, anyFewerObstacles] = r.split(',');
+  if (anyLooserM !== 'false') errors.push('hard track has a looser move limit than easy on some level: ' + r);
+  if (anyFewerObstacles !== 'false') errors.push('hard track has fewer obstacles than easy on some level: ' + r);
+  if (Number(tighterM) < 70) errors.push('hard track move limit not meaningfully tighter than easy: ' + r);
+  if (Number(moreObstacles) < 70) errors.push('hard track does not add visible extra obstacles on most levels: ' + r);
+});
+// 1d) Hard track must also load/play cleanly across all 100 levels, own progress from the easy track's.
+guard('hard track levels + independent progress', () => {
+  const r = vm.runInContext(`(()=>{
+    setTrack(true);for(let i=1;i<=100;i++){load(i)} load(3);win();
+    const hardHas3=!!progress[3];
+    setTrack(false);
+    const easyHas3=!!progress[3];
+    return [hardHas3,easyHas3].join(',');
+  })()`, c);
+  if (r !== 'true,false') errors.push('easy/hard tracks are not keeping independent progress: ' + r);
 });
 // 2) Click every button with a handler (skip destructive reset/export)
-const skip = /reset|export/i;
+// hardBtn is skipped here because it now persistently switches the active track (own progress/level
+// bookmark), which would make every later test's assumption of "we're on the easy track" order-dependent;
+// track switching itself is covered explicitly above.
+const skip = /reset|export|hardBtn/i;
 for (const id of ids) {
   if (skip.test(id)) continue;
   const h = el(id).onclick;
@@ -133,7 +170,7 @@ for (const id of ids) {
 // 3) Level loading + win flow
 guard('levels', () => vm.runInContext('for(let i=1;i<=100;i++){load(i)} load(3); win();', c));
 frames(3); flushTimers();
-const savedLevel = JSON.parse(localStorage.getItem('magnet_save') || '{}').level;
+const savedLevel = JSON.parse(localStorage.getItem('magnet_save') || '{}').easyLevel;
 // 4) Pause/resume hooks called by MainActivity
 guard('pause/resume', () => vm.runInContext('window.MAGNET_APP_PAUSE&&MAGNET_APP_PAUSE();window.MAGNET_APP_RESUME&&MAGNET_APP_RESUME();', c));
 // 5) Warm start: progress must survive a relaunch
@@ -152,7 +189,7 @@ guard('back button', () => {
 guard('daily level', () => {
   const r = vm.runInContext(`(()=>{let bad=0;for(let i=0;i<400;i++){const d=new Date(2026,0,1);d.setDate(d.getDate()+i);const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');const L=makeDailyLevel(k);const inb=v=>v>0&&v<1;const ok=inb(L.start[0])&&inb(L.start[1])&&inb(L.target[0])&&inb(L.target[1])&&L.o.every(o=>o[0]>=0&&o[1]>=0&&o[0]+o[2]<=1.0001&&o[1]+o[3]<=1.0001)&&L.moving.every(m=>m.p[0]-m.amp>=-1e-6&&m.p[0]+m.amp+m.w<=1.0001&&m.p[1]-m.amp>=-1e-6&&m.p[1]+m.amp+m.h<=1.0001)&&(L.balls||[]).every(p=>inb(p[0])&&inb(p[1]))&&(L.targets||[]).every(p=>inb(p[0])&&inb(p[1]));if(!ok)bad++}
     const det=JSON.stringify(makeDailyLevel('2026-09-27'))===JSON.stringify(makeDailyLevel('2026-09-27'));
-    for(let i=1;i<=12;i++)progress[i]={stars:3,best:3};load(12);startDaily();const wasDaily=level===DAILY_LEVEL;win();const saved=JSON.parse(localStorage.getItem('magnet_save')).level;const ds=dailyState();$('nextBtn').onclick();
+    for(let i=1;i<=12;i++)progress[i]={stars:3,best:3};load(12);startDaily();const wasDaily=level===DAILY_LEVEL;win();const saved=JSON.parse(localStorage.getItem('magnet_save')).easyLevel;const ds=dailyState();$('nextBtn').onclick();
     return [bad,det,wasDaily,saved,ds.streak,level].join(',')})()`, c);
   if (r !== '0,true,true,12,1,12') errors.push('daily level: ' + r + ' (expected 0,true,true,12,1,12)');
 });

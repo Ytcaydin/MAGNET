@@ -44,13 +44,16 @@ const c=document.getElementById('c'),ctx=c.getContext('2d'),$=id=>document.getEl
 // Older Android WebViews may not expose CanvasRenderingContext2D.roundRect.
 if(!CanvasRenderingContext2D.prototype.roundRect){CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){r=Math.min(r,Math.abs(w)/2,Math.abs(h)/2);this.moveTo(x+r,y);this.lineTo(x+w-r,y);this.quadraticCurveTo(x+w,y,x+w,y+r);this.lineTo(x+w,y+h-r);this.quadraticCurveTo(x+w,y+h,x+w-r,y+h);this.lineTo(x+r,y+h);this.quadraticCurveTo(x,y+h,x,y+h-r);this.lineTo(x,y+r);this.quadraticCurveTo(x,y,x+r,y);return this}}
 let W=1,H=1,dpr=1,dt=.016,prev=performance.now(),level=1,moves=0,drag=false,won=false,time=0,particles=[],trail=[],audio=null,balls=[],targets=[],obstacles=[],moving=[],fixed=[],ice=[],gate=null,switchOn=false,skin='classic',progress={},bonusStars=0,settings={sound:true,vibe:true,hardMode:false},levelStart=0,magnet={x:0,y:0,tx:0,ty:0},hintUsed=false,dragStart={x:0,y:0,t:0},releasePulse=0,impactFlash=0,tutorialTimer=0,firstMove=false;
+// V5.7.3: Easy and Hard are two separate 100-level tracks (own progress + resume point), not just a runtime multiplier.
+let easyProgress={},hardProgress={},easyLevel=1,hardLevel=1;
+progress=easyProgress;
 const ICE_FRICTION=.55; // per-second velocity retention on ice zones vs .022 normal — ball keeps sliding
 const HARD_MOVE_SPEED_MULT=1.3, HARD_STAR_MULT=.75;
 let bumpers=[],gamePaused=false,magnetVelocity={x:0,y:0},lastPointer={x:0,y:0,t:0},feedbackFlashTimer=0,analytics={sessions:0,levelsStarted:0,levelsCompleted:0,retries:0,hints:0,events:{},levelStats:{},sessionId:null,sessionStartedAt:0,lastEvent:null};
 const PLAYTEST_MODE = new URLSearchParams(location.search).get('playtest')==='1' || localStorage.getItem('magnet_playtest')==='1';
 const SOFT_LAUNCH_MODE = true;
 const SOFT_LAUNCH_VERSION = '2';
-const RELEASE_VERSION='5.7.2';
+const RELEASE_VERSION='5.7.3';
 /* ================= I18N (TR / EN) ================= */
 const I18N={
 hud_moves:['HAMLE','MOVES'],hud_level:['BÖLÜM','LEVEL'],hud_daily:['GÜNLÜK','DAILY'],paused:['OYUN DURAKLATILDI','GAME PAUSED'],
@@ -118,7 +121,7 @@ let sessionStartedAt=Date.now();
 const skins={classic:{name:'Classic',stars:0,a:'#52b9ff',b:'#ff6170'},neon:{name:'Neon',stars:30,a:'#8b5cff',b:'#00f5d4'},gold:{name:'Gold',stars:60,a:'#ffd45a',b:'#fff1a8'},ice:{name:'Ice',stars:100,a:'#8ce8ff',b:'#dff9ff'},fire:{name:'Fire',stars:150,a:'#ff7043',b:'#ffcf66'},galaxy:{name:'Galaxy',stars:220,a:'#a86cff',b:'#4c6fff'},cyber:{name:'Cyber',stars:300,a:'#00e5ff',b:'#ff00a8'},toxic:{name:'Toxic',stars:400,a:'#9cff57',b:'#d8ff8a'},void:{name:'Void',stars:520,a:'#6e7280',b:'#20232b'},master:{name:'Master',stars:700,a:'#ffffff',b:'#52b9ff'}};
 const worlds=[{name:'ÖĞREN',sub:'Temel manyetik hareket'},{name:'ENGELLER',sub:'Duvarlar ve açı'},{name:'KUTUPLAR',sub:'Çekim ve itiş alanları'},{name:'HAREKET',sub:'Zamanlama ve hareketli engeller'},{name:'USTA',sub:'Tüm mekanikler'}];
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}function rnd(i){return ((i*9301+49297)%233280)/233280}
-function makeLevel(n){
+function makeLevel(n,hard){
   let w=Math.floor((n-1)/20),p=(n-1)%20;
   let L={n,name:'Bölüm '+n,start:[.13,p%2?.82:.18],target:[.87,p%2?.18:.82],o:[],m:5,balls:null,targets:null,fixed:[],moving:[],gate:null,switch:null};
   // V2.1: first 20 levels are hand-authored teaching levels.
@@ -146,6 +149,7 @@ function makeLevel(n){
       {start:[.14,.82],target:[.86,.18],m:9,o:[[.27,.48,.055,.40],[.58,.10,.055,.40]],fixed:[{p:[.45,.66],pol:'pull'},{p:[.72,.30],pol:'push'}],moving:[{p:[.50,.50],w:.18,h:.045,axis:'x',amp:.18,speed:2.3}]}
     ][p];
     L.start=A.start;L.target=A.target;L.o=A.o||[];L.m=A.m;L.fixed=A.fixed||[];L.moving=A.moving||[];
+    if(hard)applyHardTrack(L,w);
     return L;
   }
   // V2.4: worlds 2–5 use controlled design families instead of generic difficulty scaling.
@@ -235,13 +239,27 @@ function makeLevel(n){
     if(p>=15){L.balls=[[.12,.20],[.12,.50],[.12,.80]];L.targets=[[.88,.20],[.88,.50],[.88,.80]];L.fixed.push({p:[.58,flip?.70:.30],pol:'push'});}
     L.m=10+Math.floor(p/3);
   }
+  if(hard)applyHardTrack(L,w);
   return L
 }
-const levels=Array.from({length:100},(_,i)=>makeLevel(i+1));
-function qaLevelData(){
+// V5.7.3: bakes the Hard track's extra difficulty directly into its own level data (tighter par,
+// faster moving obstacles, extra obstacle blocks) instead of a runtime multiplier on shared geometry —
+// so Easy and Hard are genuinely two different sets of 100 levels, not the same screen with a modifier.
+function applyHardTrack(L,w){
+  L.m=Math.max(2,Math.round(L.m*HARD_STAR_MULT));
+  if(L.moving.length)L.moving=L.moving.map(mv=>({...mv,speed:+(mv.speed*HARD_MOVE_SPEED_MULT).toFixed(3)}));
+  const capW0=[1,3,2,2,1][w];
+  const extra=hardExtraObstacles(L,capW0);
+  if(extra.length)L.o=[...L.o,...extra];
+}
+const easyLevels=Array.from({length:100},(_,i)=>makeLevel(i+1,false));
+const hardLevels=Array.from({length:100},(_,i)=>makeLevel(i+1,true));
+let levels=easyLevels;
+function qaLevelData(arr){
+  arr=arr||levels;
   let ok=true, errs=[];
-  if(levels.length!==100){ok=false;errs.push('level-count')}
-  levels.forEach((L,i)=>{
+  if(arr.length!==100){ok=false;errs.push('level-count')}
+  arr.forEach((L,i)=>{
     ['start','target'].forEach(k=>{let p=L[k];if(!p||p.length!==2||p[0]<=0||p[0]>=1||p[1]<=0||p[1]>=1){ok=false;errs.push(`${i+1}-${k}`)}});
     (L.o||[]).forEach(o=>{if(o[0]<0||o[1]<0||o[2]<=0||o[3]<=0||o[0]+o[2]>1||o[1]+o[3]>1){ok=false;errs.push(`${i+1}-obstacle`)}});
     (L.ice||[]).forEach(o=>{if(o[0]<0||o[1]<0||o[2]<=0||o[3]<=0||o[0]+o[2]>1||o[1]+o[3]>1){ok=false;errs.push(`${i+1}-ice`)}});
@@ -255,11 +273,12 @@ function qaLevelData(){
 }
 
 function totalStars(){return Object.values(progress).reduce((a,v)=>a+(v?.stars||0),0)+bonusStars}
-function save(){localStorage.setItem('magnet_save',JSON.stringify({level:level===DAILY_LEVEL?dailyReturnLevel:level,skin,progress,bonusStars,settings,analytics}))}
-function restore(){try{let s=JSON.parse(localStorage.getItem('magnet_save')||'null');if(s){level=clamp(s.level||1,1,100);skin=s.skin||'classic';progress=s.progress||{};bonusStars=Math.max(0,Number(s.bonusStars)||0);settings={...settings,...(s.settings||{})};analytics={...analytics,...(s.analytics||{}),events:{...(analytics.events||{}),...((s.analytics||{}).events||{})},levelStats:{...(analytics.levelStats||{}),...((s.analytics||{}).levelStats||{})}}}}catch(e){}}
+function save(){const curLevel=level===DAILY_LEVEL?dailyReturnLevel:level;if(settings.hardMode){hardProgress=progress;hardLevel=curLevel}else{easyProgress=progress;easyLevel=curLevel}localStorage.setItem('magnet_save',JSON.stringify({skin,easyProgress,hardProgress,easyLevel,hardLevel,bonusStars,settings,analytics}))}
+function restore(){try{let s=JSON.parse(localStorage.getItem('magnet_save')||'null');if(s){skin=s.skin||'classic';bonusStars=Math.max(0,Number(s.bonusStars)||0);settings={...settings,...(s.settings||{})};analytics={...analytics,...(s.analytics||{}),events:{...(analytics.events||{}),...((s.analytics||{}).events||{})},levelStats:{...(analytics.levelStats||{}),...((s.analytics||{}).levelStats||{})}};if(s.easyProgress||s.hardProgress){easyProgress=s.easyProgress||{};hardProgress=s.hardProgress||{};easyLevel=clamp(s.easyLevel||1,1,100);hardLevel=clamp(s.hardLevel||1,1,100)}else if(s.progress){if(settings.hardMode){hardProgress=s.progress;hardLevel=clamp(s.level||1,1,100)}else{easyProgress=s.progress;easyLevel=clamp(s.level||1,1,100)}}levels=settings.hardMode?hardLevels:easyLevels;progress=settings.hardMode?hardProgress:easyProgress;level=settings.hardMode?hardLevel:easyLevel}}catch(e){}}
+function setTrack(hard){hard=!!hard;if(hard===settings.hardMode)return;const curLevel=level===DAILY_LEVEL?dailyReturnLevel:level;if(settings.hardMode){hardProgress=progress;hardLevel=curLevel}else{easyProgress=progress;easyLevel=curLevel}settings.hardMode=hard;levels=hard?hardLevels:easyLevels;progress=hard?hardProgress:easyProgress;level=hard?hardLevel:easyLevel}
 function resize(){let r=c.getBoundingClientRect();dpr=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;c.width=Math.floor(W*dpr);c.height=Math.floor(H*dpr);ctx.setTransform(dpr,0,0,dpr,0,0)}addEventListener('resize',resize);
 function px(v){return v*W}function py(v){return v*H}
-function load(n){level=clamp(n,1,levels[DAILY_LEVEL-1]?DAILY_LEVEL:100);let q=levels[level-1];moves=0;won=false;time=0;particles=[];trail=[];switchOn=false;hintUsed=false;tutorialTimer=level<=10?3.2:0;firstMove=false;gate=q.gate?{x:px(q.gate.p[0]),y:py(q.gate.p[1]),w:px(q.gate.w),h:py(q.gate.h)}:null;obstacles=q.o.map(o=>({x:px(o[0]),y:py(o[1]),w:px(o[2]),h:py(o[3])}));if(settings.hardMode)hardExtraObstacles(q).forEach(o=>obstacles.push({x:px(o[0]),y:py(o[1]),w:px(o[2]),h:py(o[3])}));ice=(q.ice||[]).map(o=>({x:px(o[0]),y:py(o[1]),w:px(o[2]),h:py(o[3])}));moving=q.moving.map(o=>({x:px(o.p[0]),y:py(o.p[1]),baseX:px(o.p[0]),baseY:py(o.p[1]),w:px(o.w),h:py(o.h),axis:o.axis,amp:o.amp,speed:o.speed}));fixed=q.fixed.map(o=>({x:px(o.p[0]),y:py(o.p[1]),r:18,pol:o.pol}));let bs=q.balls||[q.start],ts=q.targets||[q.target];balls=bs.map((p,i)=>({x:px(p[0]),y:py(p[1]),r:12,vx:0,vy:0,done:false,id:i}));targets=ts.map(p=>({x:px(p[0]),y:py(p[1]),r:25,filled:false}));magnet={x:px(.5),y:py(.88),tx:px(.5),ty:py(.88)};levelStart=Date.now();updateHUD();setWorld();setTutorial();closeAll();save()}
+function load(n){level=clamp(n,1,levels[DAILY_LEVEL-1]?DAILY_LEVEL:100);let q=levels[level-1];moves=0;won=false;time=0;particles=[];trail=[];switchOn=false;hintUsed=false;tutorialTimer=level<=10?3.2:0;firstMove=false;gate=q.gate?{x:px(q.gate.p[0]),y:py(q.gate.p[1]),w:px(q.gate.w),h:py(q.gate.h)}:null;obstacles=q.o.map(o=>({x:px(o[0]),y:py(o[1]),w:px(o[2]),h:py(o[3])}));ice=(q.ice||[]).map(o=>({x:px(o[0]),y:py(o[1]),w:px(o[2]),h:py(o[3])}));moving=q.moving.map(o=>({x:px(o.p[0]),y:py(o.p[1]),baseX:px(o.p[0]),baseY:py(o.p[1]),w:px(o.w),h:py(o.h),axis:o.axis,amp:o.amp,speed:o.speed}));fixed=q.fixed.map(o=>({x:px(o.p[0]),y:py(o.p[1]),r:18,pol:o.pol}));let bs=q.balls||[q.start],ts=q.targets||[q.target];balls=bs.map((p,i)=>({x:px(p[0]),y:py(p[1]),r:12,vx:0,vy:0,done:false,id:i}));targets=ts.map(p=>({x:px(p[0]),y:py(p[1]),r:25,filled:false}));magnet={x:px(.5),y:py(.88),tx:px(.5),ty:py(.88)};levelStart=Date.now();updateHUD();setWorld();setTutorial();closeAll();save()}
 function highest(){let h=1;for(let i=1;i<=100;i++)if(progress[i]?.stars)h=i+1;return clamp(h,1,100)}
 function updateHUD(){$('moves').textContent=moves;const isDaily=level===DAILY_LEVEL;$('levelLabel').textContent=t(isDaily?'hud_daily':'hud_level');$('levelHud').textContent=isDaily?dailyLabel(levels[DAILY_LEVEL-1].daily):level;{const st=isDaily?(dailyState().last===localDay()?(dailyState().bestStars||0):0):(progress[level]?.stars||0);$('stars').textContent='★'.repeat(st)+'☆'.repeat(3-st)}$('progressText').textContent=`${Math.min(highest(),100)} / 100`;$('overallProgress').style.width=`${Math.min(highest(),100)}%`}
 function setWorld(){if(level===DAILY_LEVEL){$('worldText').textContent=t('daily_world',{d:dailyLabel(levels[DAILY_LEVEL-1].daily)});return}let w=Math.floor((level-1)/20);$('worldText').textContent=`${t('world')} ${String(w+1).padStart(2,'0')} · ${t('w'+w)}`}
@@ -273,8 +292,8 @@ c.addEventListener('pointerdown',e=>{if(won)return;ensureAudio();let p=pointer(e
 c.addEventListener('pointermove',e=>{if(!drag||won)return;let p=pointer(e);magnet.tx=clamp(p.x,28,W-28);magnet.ty=clamp(p.y,28,H-28)});
 c.addEventListener('pointerup',()=>{if(!drag)return;drag=false;$('gestureBtn').textContent=t('gesture_idle');let speed=Math.hypot(magnet.x-dragStart.x,magnet.y-dragStart.y)/Math.max(.12,(performance.now()-dragStart.t)/1000);if(speed>120){releasePulse=Math.min(1,speed/700);emit(magnet.x,magnet.y,Math.min(10,3+Math.floor(speed/180)));playTone(420+Math.min(360,speed),.045)}});c.addEventListener('pointercancel',()=>{drag=false;releasePulse=0;$('gestureBtn').textContent=t('gesture_idle')});
 function circleRectResolve(b,o){let nx=clamp(b.x,o.x,o.x+o.w),ny=clamp(b.y,o.y,o.y+o.h),dx=b.x-nx,dy=b.y-ny,d2=dx*dx+dy*dy;if(d2>=b.r*b.r)return false;let d=Math.sqrt(d2)||1;dx/=d;dy/=d;let pen=b.r-d+1;b.x+=dx*pen;b.y+=dy*pen;let vn=b.vx*dx+b.vy*dy;if(vn<0){b.vx-=1.8*vn*dx;b.vy-=1.8*vn*dy;b.vx*=.78;b.vy*=.78;emit(b.x,b.y,4);impactFlash=Math.max(impactFlash,.65);vibe(5)}return true}
-function update(d){if(won)return;time+=d;if(tutorialTimer>0&&!firstMove){tutorialTimer-=d;if(tutorialTimer<=0&&level<=10){setHint(level===1?t('tut_idle1'):t('tut_idle'));setTimeout(()=>{if(!drag&&!won)setHint('')},2400)}}releasePulse=Math.max(0,releasePulse-d*2.8);impactFlash=Math.max(0,impactFlash-d*3.5);moving.forEach(o=>{let v=Math.sin(time*o.speed*(settings.hardMode?HARD_MOVE_SPEED_MULT:1))*o.amp*(o.axis==='x'?W:H);if(o.axis==='x')o.x=o.baseX+v;else o.y=o.baseY+v});magnet.x+=(magnet.tx-magnet.x)*Math.min(1,d*18);magnet.y+=(magnet.ty-magnet.y)*Math.min(1,d*18);balls.forEach((b,bi)=>{if(b.done)return;let dx=magnet.x-b.x,dy=magnet.y-b.y,dist=Math.hypot(dx,dy)||1;if(dist<360){let f=Math.pow(1-dist/360,2)*1700;b.vx+=dx/dist*f*d;b.vy+=dy/dist*f*d}fixed.forEach(fm=>{let x=fm.x-b.x,y=fm.y-b.y,fd=Math.hypot(x,y)||1;if(fd<250){let f=Math.pow(1-fd/250,2)*720*(fm.pol==='pull'?1:-1);b.vx+=x/fd*f*d;b.vy+=y/fd*f*d}});let onIce=ice.some(z=>b.x>=z.x&&b.x<=z.x+z.w&&b.y>=z.y&&b.y<=z.y+z.h),fr=onIce?ICE_FRICTION:.022;b.vx*=Math.pow(fr,d);b.vy*=Math.pow(fr,d);let sp=Math.hypot(b.vx,b.vy);if(sp>900){b.vx=b.vx/sp*900;b.vy=b.vy/sp*900}b.x+=b.vx*d;b.y+=b.vy*d;if(b.x<b.r){b.x=b.r;b.vx=Math.abs(b.vx)*.58}if(b.x>W-b.r){b.x=W-b.r;b.vx=-Math.abs(b.vx)*.58}if(b.y<b.r){b.y=b.r;b.vy=Math.abs(b.vy)*.58}if(b.y>H-b.r){b.y=H-b.r;b.vy=-Math.abs(b.vy)*.58}obstacles.forEach(o=>circleRectResolve(b,o));moving.forEach(o=>circleRectResolve(b,o));if(gate&&!switchOn)circleRectResolve(b,gate);if(levels[level-1].switch){let s=levels[level-1].switch,sx=px(s[0]),sy=py(s[1]);if(Math.hypot(b.x-sx,b.y-sy)<24){switchOn=true;emit(sx,sy,18);playTone(900,.08);vibe(12)}}let ti=targets.findIndex(t=>!t.filled&&Math.hypot(t.x-b.x,t.y-b.y)<t.r+b.r*.7);if(ti>=0){targets[ti].filled=true;b.done=true;b.vx=b.vy=0;emit(targets[ti].x,targets[ti].y,36);playTone(620+bi*90,.1);vibe(18)}});if(balls.length&&balls.every(b=>b.done))win();particles.forEach(p=>{p.x+=p.vx*d;p.y+=p.vy*d;p.life-=d;p.vx*=.97;p.vy*=.97});particles=particles.filter(p=>p.life>0);let active=balls.find(b=>!b.done);if(active){trail.push({x:active.x,y:active.y});if(trail.length>24)trail.shift()}}
-function starsFor(){let lim=levels[level-1].m;if(settings.hardMode)lim=Math.max(2,Math.round(lim*HARD_STAR_MULT));return moves<=lim?3:moves<=lim+3?2:1}
+function update(d){if(won)return;time+=d;if(tutorialTimer>0&&!firstMove){tutorialTimer-=d;if(tutorialTimer<=0&&level<=10){setHint(level===1?t('tut_idle1'):t('tut_idle'));setTimeout(()=>{if(!drag&&!won)setHint('')},2400)}}releasePulse=Math.max(0,releasePulse-d*2.8);impactFlash=Math.max(0,impactFlash-d*3.5);moving.forEach(o=>{let v=Math.sin(time*o.speed)*o.amp*(o.axis==='x'?W:H);if(o.axis==='x')o.x=o.baseX+v;else o.y=o.baseY+v});magnet.x+=(magnet.tx-magnet.x)*Math.min(1,d*18);magnet.y+=(magnet.ty-magnet.y)*Math.min(1,d*18);balls.forEach((b,bi)=>{if(b.done)return;let dx=magnet.x-b.x,dy=magnet.y-b.y,dist=Math.hypot(dx,dy)||1;if(dist<360){let f=Math.pow(1-dist/360,2)*1700;b.vx+=dx/dist*f*d;b.vy+=dy/dist*f*d}fixed.forEach(fm=>{let x=fm.x-b.x,y=fm.y-b.y,fd=Math.hypot(x,y)||1;if(fd<250){let f=Math.pow(1-fd/250,2)*720*(fm.pol==='pull'?1:-1);b.vx+=x/fd*f*d;b.vy+=y/fd*f*d}});let onIce=ice.some(z=>b.x>=z.x&&b.x<=z.x+z.w&&b.y>=z.y&&b.y<=z.y+z.h),fr=onIce?ICE_FRICTION:.022;b.vx*=Math.pow(fr,d);b.vy*=Math.pow(fr,d);let sp=Math.hypot(b.vx,b.vy);if(sp>900){b.vx=b.vx/sp*900;b.vy=b.vy/sp*900}b.x+=b.vx*d;b.y+=b.vy*d;if(b.x<b.r){b.x=b.r;b.vx=Math.abs(b.vx)*.58}if(b.x>W-b.r){b.x=W-b.r;b.vx=-Math.abs(b.vx)*.58}if(b.y<b.r){b.y=b.r;b.vy=Math.abs(b.vy)*.58}if(b.y>H-b.r){b.y=H-b.r;b.vy=-Math.abs(b.vy)*.58}obstacles.forEach(o=>circleRectResolve(b,o));moving.forEach(o=>circleRectResolve(b,o));if(gate&&!switchOn)circleRectResolve(b,gate);if(levels[level-1].switch){let s=levels[level-1].switch,sx=px(s[0]),sy=py(s[1]);if(Math.hypot(b.x-sx,b.y-sy)<24){switchOn=true;emit(sx,sy,18);playTone(900,.08);vibe(12)}}let ti=targets.findIndex(t=>!t.filled&&Math.hypot(t.x-b.x,t.y-b.y)<t.r+b.r*.7);if(ti>=0){targets[ti].filled=true;b.done=true;b.vx=b.vy=0;emit(targets[ti].x,targets[ti].y,36);playTone(620+bi*90,.1);vibe(18)}});if(balls.length&&balls.every(b=>b.done))win();particles.forEach(p=>{p.x+=p.vx*d;p.y+=p.vy*d;p.life-=d;p.vx*=.97;p.vy*=.97});particles=particles.filter(p=>p.life>0);let active=balls.find(b=>!b.done);if(active){trail.push({x:active.x,y:active.y});if(trail.length>24)trail.shift()}}
+function starsFor(){let lim=levels[level-1].m;return moves<=lim?3:moves<=lim+3?2:1}
 function win(){won=true;analytics.levelsCompleted++;const ls=levelStat(level);ls.completed=(ls.completed||0)+1;ls.bestMoves=Math.min(ls.bestMoves||9999,moves);ls.lastStars=starsFor();ls.lastCompletedAt=Date.now();track('level_complete',{level,stars:starsFor(),moves});let s=starsFor(),old=progress[level]?.stars||0,best=progress[level]?.best||999;progress[level]={stars:Math.max(old,s),best:Math.min(best,moves)};save();updateHUD();$('stars').textContent='★'.repeat(s)+'☆'.repeat(3-s);$('resultTitle').textContent=level===100?t('res_master'):t('res_title');$('resultText').textContent=t('res_text',{m:moves});$('resultStars').textContent='★'.repeat(s)+'☆'.repeat(3-s);$('statMoves').textContent=moves;$('statBest').textContent=progress[level].best;$('statReward').textContent='+'+s;$('nextBtn').textContent=level===100?t('res_restart'):t('res_next',{n:level+1});$('resultText2').textContent=s===3?t('res_perfect'):t('res_more',{k:3-s});open('result');playTone(650,.08);setTimeout(()=>playTone(850,.12),100);vibe(25);emit(W/2,H/2,45)}
 function emit(x,y,n=6){for(let i=0;i<n;i++){let a=Math.random()*6.28,s=35+Math.random()*180;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.25+Math.random()*.45,size:1.5+Math.random()*3})}particles=particles.slice(-180)}
 function draw(t){ctx.clearRect(0,0,W,H);let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#101c27');g.addColorStop(1,'#080e15');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.strokeStyle='#14212c';ctx.lineWidth=1;for(let x=0;x<W;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}for(let y=0;y<H;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
@@ -288,11 +307,11 @@ function closeAll(){document.querySelectorAll('.overlay').forEach(x=>x.style.dis
 function renderLevels(world=0){$('worldTabs').innerHTML=worlds.map((x,i)=>`<button class="worldBtn ${i===world?'active':''}" data-world="${i}">D${i+1}<br>${t('w'+i)}</button>`).join('');document.querySelectorAll('.worldBtn').forEach(b=>b.onclick=()=>renderLevels(+b.dataset.world));let g=$('levelGrid');g.innerHTML='';for(let i=world*20+1;i<=world*20+20;i++){let unlocked=i<=highest(),d=document.createElement('button');d.className='lvl '+(unlocked?'':'lock')+' '+(progress[i]?'done':'');d.innerHTML=unlocked?`${i}<span class="s">${'★'.repeat(progress[i]?.stars||0)}${'☆'.repeat(3-(progress[i]?.stars||0))}</span>`:`🔒`;if(unlocked)d.onclick=()=>{closeAll();load(i)};g.appendChild(d)}}
 function renderShop(){$('shopStars').textContent=totalStars();let g=$('shopGrid');g.innerHTML='';Object.entries(skins).forEach(([id,s])=>{let owned=totalStars()>=s.stars;let active=skin===id;let d=document.createElement('div');d.className='skin';d.innerHTML=`<div class="orb" style="background:linear-gradient(90deg,${s.a} 50%,${s.b} 50%);box-shadow:0 0 20px ${s.a}66"></div><b>${s.name}</b><small>${active?t('skin_equipped'):owned?t('skin_unlocked'):'⭐ '+s.stars}</small><button>${active?t('skin_active'):owned?t('skin_equip'):t('skin_locked')}</button>`;d.querySelector('button').onclick=()=>{if(!owned||active)return;skin=id;save();renderShop();toast(t('skin_toast',{s:s.name}));playTone(760,.1)};g.appendChild(d)})}
 function renderSettings(){$('soundBtn').textContent=settings.sound?t('on'):t('off');$('vibeBtn').textContent=settings.vibe?t('on'):t('off');$('langBtn').textContent=t('lang_name');$('hardBtn').textContent=settings.hardMode?t('on'):t('off');$('hardBtn').classList.toggle('danger',!!settings.hardMode);$('diagInfo').innerHTML=renderDiagnostics()}
-function setWelcomeDiff(hard){settings.hardMode=hard;$('diffEasyBtn').classList.toggle('active',!hard);$('diffHardBtn').classList.toggle('active',hard)}
+function setWelcomeDiff(hard){setTrack(hard);$('diffEasyBtn').classList.toggle('active',!hard);$('diffHardBtn').classList.toggle('active',hard)}
 function requestHint(){if(hintUsed){toast(t('hint_used'));return}hintUsed=true;let b=balls.find(x=>!x.done);if(!b)return;let dx=b.x-magnet.x,dy=b.y-magnet.y;magnet.tx=clamp(b.x-dx*.35,30,W-30);magnet.ty=clamp(b.y-dy*.35,30,H-30);setHint(t('hint_side'));setTimeout(()=>setHint(''),2800);toast(t('hint_shown'));vibe(10)}
 $('menuBtn').onclick=()=>{renderMenu();open('menuOverlay')};$('closeMenu').onclick=closeAll;$('levelsBtn').onclick=()=>{closeAll();renderLevels(Math.floor((level-1)/20));open('levelOverlay')};$('closeLevels').onclick=closeAll;$('shopBtn').onclick=()=>{closeAll();renderShop();open('shopOverlay')};$('closeShop').onclick=closeAll;$('settingsBtn').onclick=()=>{closeAll();renderSettings();open('settingsOverlay')};$('closeSettings').onclick=closeAll;$('hintBtn').onclick=()=>{closeAll();requestHint()};$('hintResultBtn').onclick=()=>{closeAll();requestHint()};$('replayBtn').onclick=()=>{closeAll();load(level)};$('nextBtn').onclick=()=>{closeAll();maybeRequestReview();if(level===DAILY_LEVEL){load(dailyReturnLevel);return}load(level===100?1:level+1)};
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')endSoftLaunchSession();else if(document.visibilityState==='visible' && !gamePaused)startSoftLaunchSession()});window.addEventListener('beforeunload',endSoftLaunchSession);
-$('diffEasyBtn').onclick=()=>setWelcomeDiff(false);$('diffHardBtn').onclick=()=>setWelcomeDiff(true);$('startBtn').onclick=()=>{if(!analytics.sessionStartedAt)startSoftLaunchSession();localStorage.setItem('magnet_started_v3','1');save();closeAll();ensureAudio()};$('exportDiagnosticsBtn').onclick=()=>{if(PLAYTEST_MODE)exportPlaytestData()};$('soundBtn').onclick=()=>{settings.sound=!settings.sound;save();renderSettings();ensureAudio()};$('vibeBtn').onclick=()=>{settings.vibe=!settings.vibe;save();renderSettings()};$('langBtn').onclick=()=>{setLang(LANG==='tr'?'en':'tr');renderSettings();toast(t('lang_changed'))};$('hardBtn').onclick=()=>{settings.hardMode=!settings.hardMode;save();renderSettings();toast(t('hard_toggled',{s:t(settings.hardMode?'on':'off')}))};$('resetBtn').onclick=()=>{if(confirm(t('reset_confirm'))){localStorage.removeItem('magnet_save');location.reload()}};$('restart').onclick=()=>{ensureAudio();analytics.retries++;const ls=levelStat(level);ls.retries=(ls.retries||0)+1;ls.lastRetryAt=Date.now();track('retry',{level});baseLoad(level);bumpers=safeBumperCandidates()};
+$('diffEasyBtn').onclick=()=>setWelcomeDiff(false);$('diffHardBtn').onclick=()=>setWelcomeDiff(true);$('startBtn').onclick=()=>{if(!analytics.sessionStartedAt)startSoftLaunchSession();localStorage.setItem('magnet_started_v3','1');save();load(level);ensureAudio()};$('exportDiagnosticsBtn').onclick=()=>{if(PLAYTEST_MODE)exportPlaytestData()};$('soundBtn').onclick=()=>{settings.sound=!settings.sound;save();renderSettings();ensureAudio()};$('vibeBtn').onclick=()=>{settings.vibe=!settings.vibe;save();renderSettings()};$('langBtn').onclick=()=>{setLang(LANG==='tr'?'en':'tr');renderSettings();toast(t('lang_changed'))};$('hardBtn').onclick=()=>{setTrack(!settings.hardMode);save();load(level);renderSettings();open('settingsOverlay');toast(t('hard_toggled',{s:t(settings.hardMode?'on':'off')}))};$('resetBtn').onclick=()=>{if(confirm(t('reset_confirm'))){localStorage.removeItem('magnet_save');location.reload()}};$('restart').onclick=()=>{ensureAudio();analytics.retries++;const ls=levelStat(level);ls.retries=(ls.retries||0)+1;ls.lastRetryAt=Date.now();track('retry',{level});baseLoad(level);bumpers=safeBumperCandidates()};
 
 /* ================= MAGNET V4.7 AD POLICY ================= */
 const AD_POLICY_VERSION='2';
@@ -369,9 +388,9 @@ $('exitQuitBtn').onclick=()=>{save();const b=bridge();if(b&&b.exitApp)b.exitApp(
 function dayOffset(days){const d=new Date();d.setDate(d.getDate()+days);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function hashStr(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function hardExtraCount(q){const n=q.n===DAILY_LEVEL?(q.baseLevel||21):q.n;const w=Math.floor((n-1)/20);if(w===0)return 0;const p=(n-1)%20;const cap=[0,3,2,2,1][w];return Math.min(1+Math.floor(p/8),cap)}
-function hardExtraObstacles(q){
-  const cnt=hardExtraCount(q);if(!cnt)return[];
+function hardExtraCount(q,capW0){const n=q.n===DAILY_LEVEL?(q.baseLevel||21):q.n;const w=Math.floor((n-1)/20);const p=(n-1)%20;const cap=[capW0===undefined?0:capW0,3,2,2,1][w];if(!cap)return 0;return Math.min(1+Math.floor(p/8),cap)}
+function hardExtraObstacles(q,capW0){
+  const cnt=hardExtraCount(q,capW0);if(!cnt)return[];
   const r=mulberry32(hashStr('hard-'+q.n+'-'+(q.daily||'')));
   const pts=[q.start,q.target].concat(q.balls||[],q.targets||[]).filter(Boolean);
   const fixedPts=(q.fixed||[]).map(f=>f.p);
@@ -395,7 +414,7 @@ function hardExtraObstacles(q){
 function makeDailyLevel(key){
   const r=mulberry32(hashStr('magnet-daily-'+key));
   const base=21+Math.floor(r()*75); // worlds 2-5
-  const L=JSON.parse(JSON.stringify(makeLevel(base)));
+  const L=JSON.parse(JSON.stringify(makeLevel(base,settings.hardMode)));
   const fx=r()<.5, fy=r()<.5;
   const px2=(x,w=0)=>fx?+(1-x-w).toFixed(4):x, py2=(y,h=0)=>fy?+(1-y-h).toFixed(4):y;
   const pt=p=>p&&[px2(p[0]),py2(p[1])];
@@ -446,7 +465,7 @@ $('feedbackBtn').onclick=sendFeedback;
 const REVIEW_LEVELS=[10,40];let pendingReview=false;
 function maybeRequestReview(){if(!pendingReview)return;pendingReview=false;const b=bridge();if(b&&b.requestReview){try{b.requestReview();track('review_requested',{level})}catch(e){}}}
 /* ============================================================================================= */
-const levelQA=qaLevelData();
+const levelQA=qaLevelData(easyLevels)&&qaLevelData(hardLevels);
 restore();applyI18n();startSoftLaunchSession();$('settingsVersion').textContent='MAGNET '+RELEASE_VERSION;refreshPlaytestUI();resize();if(!levelQA)console.error('MAGNET release contains invalid level data');load(level);if(!localStorage.getItem('magnet_started_v3')){setWelcomeDiff(settings.hardMode);open('welcomeOverlay')}requestAnimationFrame(loop);
 </script>
 </body>

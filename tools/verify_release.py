@@ -11,7 +11,7 @@ script=re.search(r'<script>([\s\S]*?)</script>',s).group(1)
 with tempfile.NamedTemporaryFile('w',suffix='.js',delete=False) as f:
     f.write(script); path=f.name
 subprocess.run(['node','--check',path],check=True)
-assert 'const levelQA=qaLevelData();' in s and 'refreshPlaytestUI();' in s
+assert 'const levelQA=qaLevelData(easyLevels)&&qaLevelData(hardLevels);' in s and 'refreshPlaytestUI();' in s
 m=re.search(r'versionName\s*=?\s*[\'\"]([^\'\"]+)',(ROOT/'android/app/build.gradle').read_text()); assert m
 assert 'PLAYTEST_MODE' in s and 'exportPlaytestData' in s and 'levelTuningSummary' in s and 'levelStat' in s
 assert re.search(r'versionCode\s+\d+', (ROOT/'android/app/build.gradle').read_text()), 'versionCode missing'

@@ -1,3 +1,14 @@
+# MAGNET V5.7.3
+
+## Kolay ve Zor artık iki ayrı 100-bölümlük set
+- Kullanıcı geri bildirimi: "Evet ekran zor / kolay seçeneği ile açılıyor. Lakin aynı bölümlerle başlıyor. Benim istediğim kolay ve zor ekranı aynı bölümleri kullanmasin... Biri zor olarak başlayıp çok zora doğru gitsin. Diğeri kolay olarak başlayıp zora dogru gitsin." V5.7.1/V5.7.2'de Zor Mod hâlâ tek bir 100-bölümlük seti paylaşıyordu (sadece görünmez katsayılar veya üstüne eklenen aynı-tohum ekstra engellerle); bu geri bildirimle gerçekten iki farklı, bağımsız ilerleyen bölüm seti kuruldu.
+- `makeLevel(n, hard)`: artık ikinci bir parametre alıyor. `hard=false` çağrıldığında üretilen 100 bölüm birebir eskisiyle aynı (Kolay = önceki tüm sürümlerdeki temel eğri, geriye dönük uyumlu). `hard=true` olduğunda `applyHardTrack(L,w)` çalışıyor: hamle payı `Math.round(m*0.75)` ile sıkılaştırılıyor, hareketli engel hızı `×1.3` ile artırılıyor, ve `hardExtraObstacles()` ile (artık Öğren dünyası dahil, dünya başına üst sınır `[1,3,2,2,1]`) bölüme kalıcı olarak ekstra engel(ler) ekleniyor — bu üçü de artık **bölüm verisinin kendisinde**, her level yüklemesinde yeniden hesaplanan bir katsayı değil.
+- İki ayrı sabit dizi: `easyLevels`/`hardLevels` (her biri 100 bölüm, `qaLevelData()` ikisini de ayrı ayrı doğruluyor). Aktif olan `levels` değişkenine göre değişiyor.
+- **Bağımsız ilerleme:** `easyProgress`/`hardProgress` ve `easyLevel`/`hardLevel` artık ayrı ayrı `localStorage`'a kaydediliyor. `setTrack(hard)` fonksiyonu track değişiminde aktif ilerlemeyi doğru yuvaya yazıp diğerini geri yüklüyor — bir sette 47. bölümde olmak diğerini etkilemiyor, birinden diğerine geçmek ilerlemeyi silmiyor. Eski (tek-set) kayıtlar geriye dönük uyumlu şekilde, kaydedildikleri anki `Zor Mod` durumuna göre ilgili sete taşınıyor.
+- Karşılama ekranındaki Kolay/Zor seçimi ve Ayarlar → Zor Mod anahtarı artık gerçekten iki farklı bölüm setini birbirine geçiriyor (`setTrack()`); ikisi de anlık olarak `load()` ile ekranı güncelliyor.
+- Ölçüm: Bölüm 1'de Kolay `m=3, engel=0` iken Zor `m=2, engel=1`; Bölüm 99'da Kolay `m=16, engel=5, hareket hızı ~2.3` iken Zor `m=12, engel=6, hareket hızı ~3.0`. 100 bölümün hepsinde Zor'un hamle payı Kolay'dan hiç gevşek değil, engel sayısı hiç az değil (bağımsız Node testiyle doğrulandı).
+- Doğrulama: `tools/smoke_test.js`'e üç yeni kontrol eklendi — her iki set için `qaLevelData()`, iki setin gerçekten farklı olduğunu doğrulayan karşılaştırma (70+ bölümde daha sıkı hamle payı ve daha fazla engel), ve track değiştirmenin ilerlemeleri karıştırmadığını doğrulayan test. `tools/verify_release.py` → `tools/smoke_test.js` PASS, Java stub derlemesi temiz, gerçek tarayıcıda Kolay/Zor Bölüm 1 karşılaştırmalı ekran görüntüsü ve track değiştirme sonrası ilerlemenin doğru korunduğu doğrulandı.
+
 # MAGNET V5.7.2
 
 ## Zor Mod'da ekstra engeller (bölüm görünümü artık farklı)
