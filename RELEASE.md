@@ -1,3 +1,11 @@
+# MAGNET V5.7.5
+
+## Zor Mod'da daha fazla engel, Bölüm 1'den itibaren
+- Kullanıcı geri bildirimi: "Zor için engel sayisini İlk bölümden itibaren biraz daha arttıralım."
+- `hardExtraCount()`: taban sayı 2 → 3, dünya başına üst sınır `[2,4,3,3,2]` → `[3,5,4,4,3]`. Bölüm 1 artık 2 yerine 3 ekstra (kırmızı) engelle başlıyor; orta/üst bölümlerde 4-5'e kadar çıkıyor.
+- Yerleştirme denemesi `80` → `200`'e çıkarıldı: daha yoğun geometrili bölümlerde (özellikle Usta dünyası — kapı/anahtar/buz/hareketli engel/mıknatıs bir arada) istenen sayıya güvenli mesafelerle ulaşmak daha fazla deneme gerektirebiliyordu; bağımsız test bir bölümde (91) eski deneme sayısıyla hedefin 1 eksik kaldığını gösterdi, artırılan deneme sayısıyla 100 bölümün tamamı tam sayıya ulaştı.
+- Doğrulama: bağımsız Node scripti ile 100 bölümün tamamında istenen ekstra engel sayısına ulaşıldığı, hiçbir engelin sınır dışına taşmadığı ve Zor'un hamle payının hep Kolay'dan sıkı kaldığı doğrulandı (0 hata). `tools/verify_release.py` → `tools/smoke_test.js` PASS, Java stub derlemesi temiz, Bölüm 1 ve 30'da gerçek tarayıcı ekran görüntüsüyle daha kalabalık ama hâlâ geçilebilir düzen teyit edildi.
+
 # MAGNET V5.7.4
 
 ## Zor Mod daha da zorlaştı ve artık görsel olarak da belli

@@ -53,7 +53,7 @@ let bumpers=[],gamePaused=false,magnetVelocity={x:0,y:0},lastPointer={x:0,y:0,t:
 const PLAYTEST_MODE = new URLSearchParams(location.search).get('playtest')==='1' || localStorage.getItem('magnet_playtest')==='1';
 const SOFT_LAUNCH_MODE = true;
 const SOFT_LAUNCH_VERSION = '2';
-const RELEASE_VERSION='5.7.4';
+const RELEASE_VERSION='5.7.5';
 /* ================= I18N (TR / EN) ================= */
 const I18N={
 hud_moves:['HAMLE','MOVES'],hud_level:['BÖLÜM','LEVEL'],hud_daily:['GÜNLÜK','DAILY'],paused:['OYUN DURAKLATILDI','GAME PAUSED'],
@@ -248,7 +248,7 @@ function makeLevel(n,hard){
 function applyHardTrack(L,w){
   L.m=Math.max(2,Math.round(L.m*HARD_STAR_MULT)-1);
   if(L.moving.length)L.moving=L.moving.map(mv=>({...mv,speed:+(mv.speed*HARD_MOVE_SPEED_MULT).toFixed(3)}));
-  const capW0=[2,4,3,3,2][w];
+  const capW0=[3,5,4,4,3][w];
   const extra=hardExtraObstacles(L,capW0);
   L.hardExtraCount=extra.length; // rendered in a distinct color so the player can see exactly what Hard Mode added, from level 1 on
   if(extra.length)L.o=[...L.o,...extra];
@@ -389,7 +389,7 @@ $('exitQuitBtn').onclick=()=>{save();const b=bridge();if(b&&b.exitApp)b.exitApp(
 function dayOffset(days){const d=new Date();d.setDate(d.getDate()+days);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function hashStr(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function hardExtraCount(q,capW0){const n=q.n===DAILY_LEVEL?(q.baseLevel||21):q.n;const w=Math.floor((n-1)/20);const p=(n-1)%20;const cap=[capW0===undefined?0:capW0,4,3,3,2][w];if(!cap)return 0;return Math.min(2+Math.floor(p/6),cap)}
+function hardExtraCount(q,capW0){const n=q.n===DAILY_LEVEL?(q.baseLevel||21):q.n;const w=Math.floor((n-1)/20);const p=(n-1)%20;const cap=[capW0===undefined?0:capW0,5,4,4,3][w];if(!cap)return 0;return Math.min(3+Math.floor(p/6),cap)}
 function hardExtraObstacles(q,capW0){
   const cnt=hardExtraCount(q,capW0);if(!cnt)return[];
   const r=mulberry32(hashStr('hard-'+q.n+'-'+(q.daily||'')));
@@ -398,7 +398,7 @@ function hardExtraObstacles(q,capW0){
   const swept=(q.moving||[]).map(m=>{let x=m.p[0],y=m.p[1],w2=m.w,h2=m.h;if(m.axis==='x'){x-=m.amp;w2+=2*m.amp}else{y-=m.amp;h2+=2*m.amp}return[x,y,w2,h2]});
   const blocks=(q.o||[]).concat(q.ice||[]).concat(swept);
   const extra=[];let tries=0;
-  while(extra.length<cnt&&tries<80){
+  while(extra.length<cnt&&tries<200){
     tries++;
     const w2=.045+r()*.035,h2=.045+r()*.035;
     const x=.14+r()*(.72-w2),y=.14+r()*(.72-h2);
