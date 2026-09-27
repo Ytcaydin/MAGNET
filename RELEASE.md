@@ -1,3 +1,10 @@
+# MAGNET V5.4.3
+
+## Arayüz
+- Ayarlar başlığındaki sabit "MAGNET 5.2.0" yerine `RELEASE_VERSION` gösteriliyor.
+- Üst bardaki yıldızlar her zaman ☆☆☆ yerine mevcut bölümde kazanılan en iyi yıldızları gösteriyor.
+- V5.4.2 cihazda açılış doğrulandı (fiziksel Android cihaz, oyun, menü ve ayarlar çalışıyor).
+
 # MAGNET V5.4.2
 
 ## Android çökme teşhisi ve sağlamlaştırma

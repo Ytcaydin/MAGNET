@@ -1,4 +1,4 @@
-# MAGNET Android Build — V5.4.2
+# MAGNET Android Build — V5.4.3
 
 ## Termux
 
@@ -17,6 +17,6 @@ APK output:
 
 CircleCI uses the Android machine image and runs the same `./gradlew` command. The pipeline performs static QA, builds the debug APK, verifies the APK is non-empty, calculates its SHA-256, and stores the APK as a CircleCI artifact.
 
-No GitHub Actions workflow is required for V5.4.2.
+No GitHub Actions workflow is required for V5.4.3.
 
 > Note: this repository uses a small self-bootstrapping `gradlew` launcher rather than a checked-in `gradle-wrapper.jar`, because the current packaging environment cannot generate the binary wrapper JAR. It still pins and caches the exact Gradle distribution through `gradle-wrapper.properties`.
