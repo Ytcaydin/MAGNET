@@ -86,14 +86,14 @@ let W=1,H=1,dpr=1,dt=.016,prev=performance.now(),level=1,moves=0,drag=false,won=
 let easyProgress={},hardProgress={},easyLevel=1,hardLevel=1,hardExtraN=0;
 progress=easyProgress;
 const ICE_FRICTION=.55; // per-second velocity retention on ice zones vs .022 normal — ball keeps sliding
-const HARD_MOVE_SPEED_MULT=1.8, HARD_STAR_MULT=.6;
+const HARD_MOVE_SPEED_MULT=1.8, HARD_STAR_MULT=.6, HARD_FRICTION=.06; // Hard floor: core keeps ~6% of its speed per second instead of ~2% — harder to stop precisely
 let brk=[],belts=[],portals=[],lasers=[],darkLevel=false,shake=0,hitFlash=0;
 const PORTAL_R=20,BELT_ACCEL=560,BREAK_SPEED=330,DARK_R_MAGNET=125,DARK_R_CORE=80;
 let bumpers=[],gamePaused=false,magnetVelocity={x:0,y:0},lastPointer={x:0,y:0,t:0},feedbackFlashTimer=0,analytics={sessions:0,levelsStarted:0,levelsCompleted:0,retries:0,hints:0,events:{},levelStats:{},sessionId:null,sessionStartedAt:0,lastEvent:null};
 const PLAYTEST_MODE = new URLSearchParams(location.search).get('playtest')==='1' || localStorage.getItem('magnet_playtest')==='1';
 const SOFT_LAUNCH_MODE = true;
 const SOFT_LAUNCH_VERSION = '2';
-const RELEASE_VERSION='6.0.0';
+const RELEASE_VERSION='6.1.0';
 /* ================= I18N (TR / EN) ================= */
 const I18N={
 hud_moves:['HAMLE','MOVES'],hud_level:['BÖLÜM','LEVEL'],hud_daily:['GÜNLÜK','DAILY'],paused:['OYUN DURAKLATILDI','GAME PAUSED'],
@@ -294,13 +294,59 @@ function makeLevel(n,hard){
 function applyHardTrack(L,w){
   L.m=Math.max(1,Math.round(L.m*HARD_STAR_MULT)-1);
   if(L.moving.length)L.moving=L.moving.map(mv=>({...mv,speed:+(mv.speed*HARD_MOVE_SPEED_MULT).toFixed(3)}));
-  const capW0=[5,8,7,7,6][w];
-  const extra=hardExtraObstacles(L,capW0);
-  L.hardExtraCount=extra.length; // rendered in a distinct color so the player can see exactly what Hard Mode added, from level 1 on
-  if(extra.length)L.o=[...L.o,...extra];
+  // V6.1: the real Hard difficulty is FENCES — 2-3 wall lines spanning the whole field, each with one narrow gap,
+  // gaps alternating bottom/top, so the core must be threaded through a zigzag instead of swung around scattered blocks.
+  const base=L.o.slice(),fences=hardFences(L,w);
+  L.o=base.concat(fences);
+  let extra=hardExtraObstacles(L,[4,6,5,5,4][w]);
+  // Guarantee: every core can still reach a target (and the switch, if a gate blocks). Drop extras, then fences, if not.
+  while(extra.length&&!levelReachable({...L,o:L.o.concat(extra)}))extra.pop();
+  let fenceN=fences.length;
+  if(!levelReachable(L)){L.o=base;fenceN=0;extra=hardExtraObstacles(L,[4,6,5,5,4][w]);while(extra.length&&!levelReachable({...L,o:L.o.concat(extra)}))extra.pop()}
+  L.o=L.o.concat(extra);
+  L.hardExtraCount=fenceN+extra.length; // fences + extra blocks are the trailing L.o entries, drawn in magenta
+  L.fenceCount=fenceN?L.fenceLines:0;
   // V6.0: lasers stay on longer / off shorter, and every 4th Hard level is a Dark Zone (only the magnet's light is visible).
   if(L.lasers&&L.lasers.length)L.lasers=L.lasers.map(z=>({...z,on:1.45,off:1.25}));
   L.dark=L.n%4===0;
+}
+function rectsOverlap(a,b){return !(a[0]+a[2]<=b[0]||b[0]+b[2]<=a[0]||a[1]+a[3]<=b[1]||b[1]+b[3]<=a[1])}
+function hardFences(L,w){
+  const p=(L.n-1)%20,count=w===0?2:3,T=.035,gapLen=w===0?.16-p*.001:Math.max(.11,.145-p*.0015);
+  const xs=count===2?[.34,.64]:[.28,.50,.72],r=mulberry32(hashStr('fence-'+L.n));
+  const sweeps=(L.moving||[]).map(m=>{let x=m.p[0],y=m.p[1],w2=m.w,h2=m.h;if(m.axis==='x'){x-=m.amp;w2+=2*m.amp}else{y-=m.amp;h2+=2*m.amp}return[x,y,w2,h2]});
+  // A fence never covers these; it opens around them instead (a moving block becomes a timed door, the gate closes its
+  // own opening until the switch is hit, a belt or portal carries the core through).
+  const holes=sweeps.concat(L.brk||[],(L.belts||[]).map(b=>b.slice(0,4)),(L.portals||[]).flatMap(pp=>[[pp[0]-.06,pp[1]-.06,.12,.12],[pp[2]-.06,pp[3]-.06,.12,.12]]),L.gate?[[L.gate.p[0],L.gate.p[1],L.gate.w,L.gate.h]]:[],(L.fixed||[]).map(f=>[f.p[0]-.065,f.p[1]-.05,.13,.10]),L.switch?[[L.switch[0]-.06,L.switch[1]-.045,.12,.09]]:[]);
+  const pts=[L.start,L.target].concat(L.balls||[],L.targets||[]).filter(Boolean),baseO=L.o.slice();
+  const fences=[],clear=[];let low=L.start[1]<.5,lines=0; // first gap on the far side from the start: forces a real detour
+  for(let i=0;i<count;i++){let placed=false;
+    for(const dx of [0,.035,-.035,.07,-.07]){if(placed)break;const x=xs[i]+dx-T/2,cx=x+T/2;if(x<.22||x+T>.78)continue;
+      if(pts.some(q=>Math.abs(q[0]-cx)<.1)||fences.some(f=>Math.abs(f[0]-x)<.14))continue;
+      const cuts=holes.filter(o=>rectsOverlap([x-.015,0,T+.03,1],o)).map(o=>[o[1]-.03,o[1]+o[3]+.03]);
+      for(let k=0;k<14&&!placed;k++){const side=k<9?low:!low,gc=side?.60+r()*.28:.12+r()*.28,g0=Math.max(.03,gc-gapLen/2),g1=Math.min(.97,g0+gapLen);
+        const zone=[x-.08,g0-.015,T+.16,g1-g0+.03];
+        if(baseO.some(o=>rectsOverlap(zone,o)))continue;
+        let segs=[[0,1]];[[g0,g1]].concat(cuts).forEach(([a,b])=>{segs=segs.flatMap(([s0,e0])=>b<=s0||a>=e0?[[s0,e0]]:[[s0,Math.max(s0,a)],[Math.min(e0,b),e0]]).filter(([u,v])=>v-u>.03)});
+        if(segs.reduce((acc,[u,v])=>acc+v-u,0)<.55)continue; // must still wall off most of the field
+        const rects=segs.map(([u,v])=>[+x.toFixed(4),+u.toFixed(4),T,+(v-u).toFixed(4)]);
+        if(!levelReachable({...L,o:baseO.concat(fences,rects)}))continue;
+        fences.push(...rects);clear.push(zone);placed=true;lines++;low=!side}}
+  }
+  L.clear=clear;L.fenceLines=lines;return fences;
+}
+// Grid flood fill in normalized space (walls inflated by a core radius on a phone-shaped field): can each core reach a
+// target, and — when a gate is closed — the switch? Walls are rasterized, so this is cheap enough to run at startup.
+function levelReachable(L){
+  // inflation ~18px each side on a phone: a route only counts if a 24px core fits with room to spare, and the core's
+  // center can never be within its radius of the screen edge
+  const N=90,rx=.046,ry=.027;
+  const mk=(gate)=>{const b=new Uint8Array(N*N);for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=(i+.5)/N,y=(j+.5)/N;if(x<.034||x>.966||y<.019||y>.981)b[j*N+i]=1}const mark=o=>{const i0=Math.max(0,Math.floor((o[0]-rx)*N)),i1=Math.min(N-1,Math.floor((o[0]+o[2]+rx)*N)),j0=Math.max(0,Math.floor((o[1]-ry)*N)),j1=Math.min(N-1,Math.floor((o[1]+o[3]+ry)*N));for(let j=j0;j<=j1;j++)for(let i=i0;i<=i1;i++)b[j*N+i]=1};(L.o||[]).forEach(mark);(L.brk||[]).forEach(mark);if(gate&&L.gate)mark([L.gate.p[0],L.gate.p[1],L.gate.w,L.gate.h]);return b};
+  const cell=p=>Math.min(N-1,Math.max(0,Math.floor(p[1]*N)))*N+Math.min(N-1,Math.max(0,Math.floor(p[0]*N)));
+  const fill=(b,p)=>{const seen=new Uint8Array(N*N),st=[cell(p)];seen[st[0]]=1;while(st.length){const c=st.pop(),i=c%N,j=(c/N)|0;if(i>0&&!seen[c-1]&&!b[c-1]){seen[c-1]=1;st.push(c-1)}if(i<N-1&&!seen[c+1]&&!b[c+1]){seen[c+1]=1;st.push(c+1)}if(j>0&&!seen[c-N]&&!b[c-N]){seen[c-N]=1;st.push(c-N)}if(j<N-1&&!seen[c+N]&&!b[c+N]){seen[c+N]=1;st.push(c+N)}}return seen};
+  const balls=L.balls||[L.start],tg=L.targets||[L.target],open=mk(false);
+  if(L.gate&&L.switch){const closed=mk(true);if(!balls.some(bp=>fill(closed,bp)[cell(L.switch)]))return false}
+  return balls.every(bp=>{const s=fill(open,bp);return tg.some(t=>s[cell(t)])});
 }
 // ================= V6.0 MECHANICS: breakable walls, conveyor belts, portals, lasers =================
 // Every element is placed from a fixed candidate list and only where it keeps safe distance from the start,
@@ -391,7 +437,7 @@ c.addEventListener('pointerdown',e=>{if(won)return;ensureAudio();let p=pointer(e
 c.addEventListener('pointermove',e=>{if(!drag||won)return;let p=pointer(e);magnet.tx=clamp(p.x,28,W-28);magnet.ty=clamp(p.y,28,H-28)});
 c.addEventListener('pointerup',()=>{if(!drag)return;drag=false;refreshGestureBtn();let speed=Math.hypot(magnet.x-dragStart.x,magnet.y-dragStart.y)/Math.max(.12,(performance.now()-dragStart.t)/1000);if(speed>120){releasePulse=Math.min(1,speed/700);emit(magnet.x,magnet.y,Math.min(10,3+Math.floor(speed/180)));playTone(420+Math.min(360,speed),.045)}});c.addEventListener('pointercancel',()=>{drag=false;releasePulse=0;refreshGestureBtn()});
 function circleRectResolve(b,o){let nx=clamp(b.x,o.x,o.x+o.w),ny=clamp(b.y,o.y,o.y+o.h),dx=b.x-nx,dy=b.y-ny,d2=dx*dx+dy*dy;if(d2>=b.r*b.r)return false;let d=Math.sqrt(d2)||1;dx/=d;dy/=d;let pen=b.r-d+1;b.x+=dx*pen;b.y+=dy*pen;let vn=b.vx*dx+b.vy*dy;if(vn<0){if(vn<-260)shake=Math.max(shake,Math.min(6,-vn/110));b.vx-=1.8*vn*dx;b.vy-=1.8*vn*dy;b.vx*=.78;b.vy*=.78;emit(b.x,b.y,4);impactFlash=Math.max(impactFlash,.65);vibe(5)}return true}
-function update(d){if(won)return;time+=d;if(tutorialTimer>0&&!firstMove){tutorialTimer-=d;if(tutorialTimer<=0&&level<=10){setHint(level===1?t('tut_idle1'):t('tut_idle'));setTimeout(()=>{if(!drag&&!won)setHint('')},2400)}}releasePulse=Math.max(0,releasePulse-d*2.8);impactFlash=Math.max(0,impactFlash-d*3.5);moving.forEach(o=>{let v=Math.sin(time*o.speed)*o.amp*(o.axis==='x'?W:H);if(o.axis==='x')o.x=o.baseX+v;else o.y=o.baseY+v});magnet.x+=(magnet.tx-magnet.x)*Math.min(1,d*18);magnet.y+=(magnet.ty-magnet.y)*Math.min(1,d*18);balls.forEach((b,bi)=>{if(b.done)return;let dx=magnet.x-b.x,dy=magnet.y-b.y,dist=Math.hypot(dx,dy)||1;if(dist<360){let f=Math.pow(1-dist/360,2)*1700*(magnet.pol||1);b.vx+=dx/dist*f*d;b.vy+=dy/dist*f*d}fixed.forEach(fm=>{let x=fm.x-b.x,y=fm.y-b.y,fd=Math.hypot(x,y)||1;if(fd<250){let f=Math.pow(1-fd/250,2)*720*(fm.pol==='pull'?1:-1);b.vx+=x/fd*f*d;b.vy+=y/fd*f*d}});let onIce=ice.some(z=>b.x>=z.x&&b.x<=z.x+z.w&&b.y>=z.y&&b.y<=z.y+z.h),fr=onIce?ICE_FRICTION:.022;b.vx*=Math.pow(fr,d);b.vy*=Math.pow(fr,d);let sp=Math.hypot(b.vx,b.vy);if(sp>900){b.vx=b.vx/sp*900;b.vy=b.vy/sp*900}b.x+=b.vx*d;b.y+=b.vy*d;if(b.x<b.r){b.x=b.r;b.vx=Math.abs(b.vx)*.58}if(b.x>W-b.r){b.x=W-b.r;b.vx=-Math.abs(b.vx)*.58}if(b.y<b.r){b.y=b.r;b.vy=Math.abs(b.vy)*.58}if(b.y>H-b.r){b.y=H-b.r;b.vy=-Math.abs(b.vy)*.58}obstacles.forEach(o=>circleRectResolve(b,o));moving.forEach(o=>circleRectResolve(b,o));if(gate&&!switchOn)circleRectResolve(b,gate);if(levels[level-1].switch){let s=levels[level-1].switch,sx=px(s[0]),sy=py(s[1]);if(Math.hypot(b.x-sx,b.y-sy)<24){switchOn=true;emit(sx,sy,18);playTone(900,.08);vibe(12)}}let ti=targets.findIndex(t=>!t.filled&&Math.hypot(t.x-b.x,t.y-b.y)<t.r+b.r*.7);if(ti>=0){targets[ti].filled=true;b.done=true;b.vx=b.vy=0;emit(targets[ti].x,targets[ti].y,36);playTone(620+bi*90,.1);vibe(18)}});if(balls.length&&balls.every(b=>b.done))win();particles.forEach(p=>{p.x+=p.vx*d;p.y+=p.vy*d;p.life-=d;p.vx*=.97;p.vy*=.97});particles=particles.filter(p=>p.life>0);let active=balls.find(b=>!b.done);if(active){trail.push({x:active.x,y:active.y});if(trail.length>24)trail.shift()}}
+function update(d){if(won)return;time+=d;if(tutorialTimer>0&&!firstMove){tutorialTimer-=d;if(tutorialTimer<=0&&level<=10){setHint(level===1?t('tut_idle1'):t('tut_idle'));setTimeout(()=>{if(!drag&&!won)setHint('')},2400)}}releasePulse=Math.max(0,releasePulse-d*2.8);impactFlash=Math.max(0,impactFlash-d*3.5);moving.forEach(o=>{let v=Math.sin(time*o.speed)*o.amp*(o.axis==='x'?W:H);if(o.axis==='x')o.x=o.baseX+v;else o.y=o.baseY+v});magnet.x+=(magnet.tx-magnet.x)*Math.min(1,d*18);magnet.y+=(magnet.ty-magnet.y)*Math.min(1,d*18);balls.forEach((b,bi)=>{if(b.done)return;let dx=magnet.x-b.x,dy=magnet.y-b.y,dist=Math.hypot(dx,dy)||1;if(dist<360){let f=Math.pow(1-dist/360,2)*1700*(magnet.pol||1);b.vx+=dx/dist*f*d;b.vy+=dy/dist*f*d}fixed.forEach(fm=>{let x=fm.x-b.x,y=fm.y-b.y,fd=Math.hypot(x,y)||1;if(fd<250){let f=Math.pow(1-fd/250,2)*720*(fm.pol==='pull'?1:-1);b.vx+=x/fd*f*d;b.vy+=y/fd*f*d}});let onIce=ice.some(z=>b.x>=z.x&&b.x<=z.x+z.w&&b.y>=z.y&&b.y<=z.y+z.h),fr=onIce?ICE_FRICTION:(settings.hardMode?HARD_FRICTION:.022);b.vx*=Math.pow(fr,d);b.vy*=Math.pow(fr,d);let sp=Math.hypot(b.vx,b.vy);if(sp>900){b.vx=b.vx/sp*900;b.vy=b.vy/sp*900}b.x+=b.vx*d;b.y+=b.vy*d;if(b.x<b.r){b.x=b.r;b.vx=Math.abs(b.vx)*.58}if(b.x>W-b.r){b.x=W-b.r;b.vx=-Math.abs(b.vx)*.58}if(b.y<b.r){b.y=b.r;b.vy=Math.abs(b.vy)*.58}if(b.y>H-b.r){b.y=H-b.r;b.vy=-Math.abs(b.vy)*.58}obstacles.forEach(o=>circleRectResolve(b,o));moving.forEach(o=>circleRectResolve(b,o));if(gate&&!switchOn)circleRectResolve(b,gate);if(levels[level-1].switch){let s=levels[level-1].switch,sx=px(s[0]),sy=py(s[1]);if(Math.hypot(b.x-sx,b.y-sy)<24){switchOn=true;emit(sx,sy,18);playTone(900,.08);vibe(12)}}let ti=targets.findIndex(t=>!t.filled&&Math.hypot(t.x-b.x,t.y-b.y)<t.r+b.r*.7);if(ti>=0){targets[ti].filled=true;b.done=true;b.vx=b.vy=0;emit(targets[ti].x,targets[ti].y,36);playTone(620+bi*90,.1);vibe(18)}});if(balls.length&&balls.every(b=>b.done))win();particles.forEach(p=>{p.x+=p.vx*d;p.y+=p.vy*d;p.life-=d;p.vx*=.97;p.vy*=.97});particles=particles.filter(p=>p.life>0);let active=balls.find(b=>!b.done);if(active){trail.push({x:active.x,y:active.y});if(trail.length>24)trail.shift()}}
 function starsFor(){let lim=levels[level-1].m;return moves<=lim?3:moves<=lim+3?2:1}
 function win(){won=true;analytics.levelsCompleted++;const ls=levelStat(level);ls.completed=(ls.completed||0)+1;ls.bestMoves=Math.min(ls.bestMoves||9999,moves);ls.lastStars=starsFor();ls.lastCompletedAt=Date.now();track('level_complete',{level,stars:starsFor(),moves});let s=starsFor(),old=progress[level]?.stars||0,best=progress[level]?.best||999;progress[level]={stars:Math.max(old,s),best:Math.min(best,moves)};save();updateHUD();$('stars').textContent='★'.repeat(s)+'☆'.repeat(3-s);$('resultTitle').textContent=level===100?t('res_master'):t('res_title');$('resultText').textContent=t('res_text',{m:moves});$('resultStars').textContent='★'.repeat(s)+'☆'.repeat(3-s);$('statMoves').textContent=moves;$('statBest').textContent=progress[level].best;$('statReward').textContent='+'+s;$('statTime').textContent=fmtTime(Date.now()-levelStart);$('nextBtn').textContent=level===100?t('res_restart'):t('res_next',{n:level+1});$('resultText2').textContent=s===3?t('res_perfect'):t('res_more',{k:3-s});open('result');playTone(650,.08);setTimeout(()=>playTone(850,.12),100);vibe(25);emit(W/2,H/2,45)}
 function emit(x,y,n=6,c){for(let i=0;i<n;i++){let a=Math.random()*6.28,s=35+Math.random()*180;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s,life:.25+Math.random()*.45,size:1.5+Math.random()*3,c})}particles=particles.slice(-180)}
@@ -550,7 +596,7 @@ $('exitQuitBtn').onclick=()=>{save();const b=bridge();if(b&&b.exitApp)b.exitApp(
 function dayOffset(days){const d=new Date();d.setDate(d.getDate()+days);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function hashStr(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function hardExtraCount(q,capW0){const n=q.n===DAILY_LEVEL?(q.baseLevel||21):q.n;const w=Math.floor((n-1)/20);const p=(n-1)%20;const cap=[capW0===undefined?0:capW0,8,7,7,6][w];if(!cap)return 0;return Math.min(5+Math.floor(p/5),cap)}
+function hardExtraCount(q,capW0){const n=q.n===DAILY_LEVEL?(q.baseLevel||21):q.n;const w=Math.floor((n-1)/20);const p=(n-1)%20;const cap=[capW0===undefined?0:capW0,8,7,7,6][w];if(!cap)return 0;return Math.min(3+Math.floor(p/5),cap)}
 function hardExtraObstacles(q,capW0){
   const cnt=hardExtraCount(q,capW0);if(!cnt)return[];
   const r=mulberry32(hashStr('hard-'+q.n+'-'+(q.daily||'')));
@@ -578,6 +624,7 @@ function hardExtraObstacles(q,capW0){
     if(q.gate&&cx>q.gate.p[0]-.06&&cx<q.gate.p[0]+q.gate.w+.06&&cy>q.gate.p[1]-.06&&cy<q.gate.p[1]+q.gate.h+.06)continue;
     if(q.switch&&Math.hypot(cx-q.switch[0],cy-q.switch[1])<.09)continue;
     if(blocks.concat(extra).some(o=>!(x+w2<o[0]-.03||o[0]+o[2]+.03<x||y+h2<o[1]-.03||o[1]+o[3]+.03<y)))continue;
+    if((q.clear||[]).some(z=>rectsOverlap([x,y,w2,h2],z)))continue; // never plug a fence gap
     extra.push([+x.toFixed(4),+y.toFixed(4),+w2.toFixed(4),+h2.toFixed(4)]);
   }
   return extra;

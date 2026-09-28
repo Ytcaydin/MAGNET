@@ -1,3 +1,25 @@
+# MAGNET V6.1.0 — Zor yol artık gerçek bir labirent
+
+## Kullanıcı geri bildirimi
+Zor · Bölüm 3 ekran görüntüsüyle: "Fazlasıyla kolay." Görüntüde 5 ekstra blok sol-ortada kümelenmişti; alt yarı ve sağ taraf tamamen boştu.
+
+## Kök neden
+- Zorluğu engel *sayısı* ile artırmak işe yaramıyordu: küçük, birbirinden kopuk bloklar hiçbir zaman bir bariyer oluşturmuyor; açık alan her zaman bir "etrafından dolanma" rotası bırakıyor.
+- Ayrıca bu oyunda bir hamle = bir dokunuş; parmak kaldırılmadan bütün rota tek hamlede sürülebiliyor. Yani 3 yıldız hamle hedefini düşürmek de zorluğu tek başına artırmıyor — zorluk kontrol hassasiyetinden gelmeli.
+
+## Çözüm
+- **Çitler (`hardFences`)**: Zor yolda her bölüme (Öğren dünyasında 2, diğerlerinde 3) ekranı yukarıdan aşağı kesen duvar hattı. Her hattın tek bir dar geçidi var (Öğren'de ~%16 → sonra %14,5'ten %11'e daralıyor; 24 px'lik çekirdek için telefonda ~80–110 px). İlk geçit başlangıcın ters yarısında, sonrakiler sırayla alt/üst → zorunlu zikzak.
+- Çit, hareketli engellerin salınım alanını, sabit mıknatısları, anahtarı, kapıyı, bantları, portalları ve kırılabilir duvarları örtmüyor; onların etrafında açıklık bırakıyor. Böylece hareketli blok zamanlı bir kapıya dönüşüyor, kapı da çitteki açıklığı anahtara basılana kadar kapalı tutuyor. Açıklıklar çıkarıldıktan sonra bile çit, sütunun en az %55'ini kapatmak zorunda.
+- Ekstra (macenta) bloklar artık çit geçitlerine asla konmuyor (`L.clear` bölgeleri); sayıları dünyaya göre 3–6.
+- **Kaygan Zor zemini**: `HARD_FRICTION=.06` (normalde .022). Çekirdek saniyede hızının ~%6'sını koruyor, daha zor duruyor ve dar geçitlerde kontrol gerektiriyor.
+- **Erişilebilirlik garantisi (`levelReachable`)**: normalize edilmiş 90×90 ızgarada, duvarlar telefonda ~18 px şişirilerek ve ekran kenarı bandı kapatılarak flood-fill yapılıyor. Her çekirdek bir hedefe (kapı varsa önce anahtara) *rahat bir koridorla* ulaşabilmeli. Her çit tek tek bu kontrolden geçerek yerleştiriliyor; ekstra bloklar kontrolü bozarsa atılıyor. (İlk denemede daha gevşek bir şişirme, kenar boyunca ~5 px'lik piksel-hassas bir geçide izin veriyordu. Bot bunu Zor 65'te yakaladı ve kural sıkılaştırıldı.)
+- Sonuç: 100 Zor bölümünün 99'unda 2–3 çit, 1'inde 1 çit var.
+
+## Doğrulama
+- `tools/solve_test.js`: bot kaygan zeminle birlikte 200 bölümü + 60 günlük düzeni oynadı → **260/260**. Bot artık sabit tohumlu (deterministik) ve hedefin odasına girince mıknatısı doğrudan hedefe koyuyor. 10 farklı tohumla yapılan dayanıklılık testinde tüm bölümler ilk denemede bitti; tek istisna Zor 61 (6/10). Orada tek bir hareketli blok iki çitin açıklığından geçerek çekirdeği geri itebilen bir 'kürek' gibi çalışıyor. Hareket dünyasına uygun bir zamanlama zorluğu olarak bırakıldı.
+- Gerçek tarayıcı: Zor 3'te başlangıçtan hedefe tek düz sürükleme artık kazandırmıyor; 6 Zor bölüm ekran görüntüsüyle incelendi; konsol hatası yok.
+- `tools/smoke_test.js` (düz çekiş regresyon testi dahil) ve `verify_release.py` PASS. Java stub derlemesi temiz. Kolay yol değişmedi.
+
 # MAGNET V6.0.0 — MAGNET 2.0 · Neon Lab
 
 ## Kullanıcı isteği

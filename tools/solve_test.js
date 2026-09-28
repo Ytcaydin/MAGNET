@@ -71,7 +71,8 @@ vm.runInContext('track=function(){};save=function(){};', ctx);
 vm.runInContext("if(typeof brk==='undefined'){globalThis.brk=[];globalThis.lasers=[];globalThis.segDist=function(){return 1e9}}", ctx);
 
 const BOT = String.raw`
-(function(track, n, maxSec){
+(function(track, n, maxSec, seed){
+  let rs=(seed|0)||1;const rnd=()=>{rs=(rs*1103515245+12345)&0x7fffffff;return rs/0x7fffffff};
   setTrack(track);
   if(typeof n==='string'){dailyReturnLevel=1;levels[DAILY_LEVEL-1]=makeDailyLevel(n);load(DAILY_LEVEL)}else load(n);
   const CELL=12, cols=Math.ceil(W/CELL), rows=Math.ceil(H/CELL), R=13;
@@ -112,7 +113,8 @@ const BOT = String.raw`
       const d=Math.hypot(goal[0]-b.x,goal[1]-b.y);if(d<lastBest-4){lastBest=d;stall=0}else stall+=8;
       if(stall>360){wig=45;stall=0;lastBest=1e9}
     }
-    if(wig>0){wig--;magnet.tx=clamp(b.x+(Math.random()-.5)*260,28,W-28);magnet.ty=clamp(b.y+(Math.random()-.5)*260,28,H-28)}
+    if(wig>0){wig--;magnet.tx=clamp(b.x+(rnd()-.5)*260,28,W-28);magnet.ty=clamp(b.y+(rnd()-.5)*260,28,H-28)}
+    else if(pathPts&&pathPts.length<=7){magnet.tx=clamp(goal[0],28,W-28);magnet.ty=clamp(goal[1],28,H-28)}
     else if(pathPts&&pathPts.length){const k=Math.min(pathPts.length-1,stall>150?2:4);magnet.tx=clamp(pathPts[k][0],28,W-28);magnet.ty=clamp(pathPts[k][1],28,H-28)}
     else{magnet.tx=clamp(goal[0],28,W-28);magnet.ty=clamp(goal[1],28,H-28)}
     update(dt);
@@ -130,8 +132,9 @@ for (const track of [false, true]) {
     if (quick && n % 3 !== 0 && !mechLevels.has(n)) continue;
     total++;
     // Two attempts with different random wiggles before calling a level unsolvable.
-    let r = run(track, n, 75);
-    if (!r.ok) r = run(track, n, 120);
+    let r = run(track, n, 75, 1);
+    if (!r.ok) r = run(track, n, 120, 2);
+    if (!r.ok) r = run(track, n, 120, 3);
     if (r.ok) solved++; else fails.push(`${track ? 'HARD' : 'EASY'}-${n}`);
     if (process.argv.includes('--verbose')) console.log(`${track ? 'HARD' : 'EASY'}-${n}`, r.ok ? `solved in ${r.sec}s sim` : 'UNSOLVED');
   }
@@ -141,8 +144,9 @@ for (const track of [false, true]) {
   for (let i = 0; i < (quick ? 10 : 30); i++) {
     const d = new Date(2026, 8, 1 + i * 7), key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     total++;
-    let r = run(track, key, 75);
-    if (!r.ok) r = run(track, key, 120);
+    let r = run(track, key, 75, 1);
+    if (!r.ok) r = run(track, key, 120, 2);
+    if (!r.ok) r = run(track, key, 120, 3);
     if (r.ok) solved++; else fails.push(`${track ? 'HARD' : 'EASY'}-daily-${key}`);
   }
 }
