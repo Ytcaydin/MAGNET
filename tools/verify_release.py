@@ -20,6 +20,8 @@ rv=re.search(r"const RELEASE_VERSION='([^']+)'",s); assert rv and rv.group(1)==m
 assert s.index("const RELEASE_VERSION=") < s.index('RELEASE_VERSION', s.index('<script>')+1) + 1, 'RELEASE_VERSION used before declaration'
 assert re.search(r'\nrestore\(\);(?:applyI18n\(\);)?startSoftLaunchSession\(\);', s), 'session start must run right after restore() or it overwrites the save'
 subprocess.run(['node',str(ROOT/'tools/smoke_test.js')],check=True)
+# Every level of both tracks (plus sampled daily layouts) must be finishable through the real physics.
+subprocess.run(['node',str(ROOT/'tools/solve_test.js')],check=True)
 res=ROOT/'android/app/src/main/res'
 assert (res/'mipmap/ic_launcher.xml').exists() and (res/'mipmap-anydpi-v26/ic_launcher.xml').exists(), 'launcher icon missing'
 assert 'android:icon="@mipmap/ic_launcher"' in (ROOT/'android/app/src/main/AndroidManifest.xml').read_text(), 'manifest icon not set'

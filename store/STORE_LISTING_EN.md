@@ -15,15 +15,20 @@ MAGNET is a one-finger magnetic physics puzzle. Touch the screen, drag the magne
 Simple rules, clever solutions. Every world adds a new idea:
 
 • LEARN — Feel the pull and master the basic move.
-• OBSTACLES — Route around walls and find the right angle.
-• POLES — Fixed N and S magnets pull or push the core. Use them to your advantage.
-• MOTION — Time your moves around sliding blocks.
-• MASTER — Gates, switches and several cores at once.
+• OBSTACLES — Route around walls; smash cracked walls with a fast hit.
+• POLES — Flip your own magnet's polarity with one tap: push instead of pull.
+• MOTION — Sliding blocks, conveyor belts and portals that teleport the core.
+• MASTER — Pulsing lasers, gates, switches and several cores at once.
 
 New every day: the Daily Level gives you a fresh layout each day. Keep your streak alive and earn a bonus star.
 
+Easy or Hard? Pick on first launch. The Hard path has its own 100 levels that start with fewer moves, more obstacles and faster traps from level 1, and in Dark Zones you only see your magnet's light.
+
 Features:
-• 100 levels across 5 worlds
+• Easy and Hard: two separate 100-level paths, each with its own progress
+• Glowing neon look with live magnetic field lines
+• Polarity flip, portals, lasers, conveyor belts and breakable walls
+• Dark Zones exclusive to the Hard path
 • A new Daily Level every day, with streaks
 • One-finger controls, short satisfying levels
 • 3-star rating by move count

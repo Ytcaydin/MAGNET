@@ -178,6 +178,22 @@ guard('hard track obstacles block the straight-line shortcut', () => {
   })()`, c);
   if (/:true/.test(r)) errors.push('hard track: a single straight drag toward the target wins without detouring around any obstacle (' + r + ')');
 });
+// 1f) V6.0 mechanics behave as designed (portal, laser, belt, breakable wall, polarity flip).
+guard('v6 mechanics physics', () => {
+  const r = vm.runInContext(`(()=>{
+    const o={};setTrack(false);
+    load(72);{const pp=portals[0],b=balls[0];b.x=pp.a.x;b.y=pp.a.y;b.vx=80;b.vy=0;b.cd=0;mechanicsStep(b,1/60);o.portal=!!pp&&Math.hypot(b.x-pp.b.x,b.y-pp.b.y)<70&&b.cd>0}
+    load(90);{const z=lasers[0],b=balls[0];time=0;b.x=(z.ax+z.bx)/2;b.y=(z.ay+z.by)/2;b.cd=0;mechanicsStep(b,1/60);o.laser=b.x===b.sx&&b.y===b.sy}
+    load(90);{const z=lasers[0],b=balls[0];time=z.on+.1;b.x=(z.ax+z.bx)/2;b.y=(z.ay+z.by)/2;mechanicsStep(b,1/60);o.laserOff=b.x!==b.sx}
+    load(66);{const bt=belts[0],b=balls[0];b.x=bt.x+bt.w/2;b.y=bt.y+bt.h/2;b.vx=b.vy=0;b.cd=1;mechanicsStep(b,.1);o.belt=Math.hypot(b.vx,b.vy)>40}
+    const hit=(v)=>{load(33);const w=brk[0],b=balls[0];b.cd=1;if(w.w<w.h){b.x=w.x-b.r+3;b.y=w.y+w.h/2;b.vx=v;b.vy=0}else{b.y=w.y-b.r+3;b.x=w.x+w.w/2;b.vy=v;b.vx=0}mechanicsStep(b,1/60);return w.alive};
+    o.breakFast=hit(700)===false;o.breakSlow=hit(80)===true;
+    load(45);magnet.pol=1;togglePolarity();o.pol=magnet.pol===-1;togglePolarity();o.pol2=magnet.pol===1;
+    load(5);togglePolarity();o.polLocked=magnet.pol===1;
+    return Object.entries(o).filter(([k,v])=>!v).map(([k])=>k).join(',');
+  })()`, c);
+  if (r) errors.push('v6 mechanics misbehave: ' + r);
+});
 // 2) Click every button with a handler (skip destructive reset/export)
 // hardBtn is skipped here because it now persistently switches the active track (own progress/level
 // bookmark), which would make every later test's assumption of "we're on the easy track" order-dependent;

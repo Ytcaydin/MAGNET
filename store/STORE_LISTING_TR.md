@@ -14,15 +14,20 @@ MAGNET, tek parmakla oynanan manyetik bir fizik bulmacasıdır. Ekrana dokun, m�
 Kurallar basit, çözümler değil. Her dünya yeni bir fikir getirir:
 
 • ÖĞREN — Mıknatısın çekimini hisset, temel hareketi öğren.
-• ENGELLER — Duvarların etrafından dolaş, doğru açıyı bul.
-• KUTUPLAR — Sabit N ve S mıknatıslar çekirdeği çeker ya da iter. Onları lehine kullan.
-• HAREKET — Kayan engellerin zamanlamasını yakala.
-• USTA — Kapılar, anahtarlar ve aynı anda birden fazla çekirdek.
+• ENGELLER — Duvarların etrafından dolaş; çatlak duvarları hızla çarparak kır.
+• KUTUPLAR — Kendi mıknatısının kutbunu tek dokunuşla çevir: çekmek yerine it.
+• HAREKET — Kayan engeller, taşıma bantları ve çekirdeği ışınlayan portallar.
+• USTA — Açılıp kapanan lazerler, kapılar, anahtarlar ve aynı anda birden fazla çekirdek.
 
 Her gün yeni: Günün Bölümü her gün farklı bir düzen sunar. Serini koru, bonus yıldız kazan.
 
+Kolay mı, Zor mu? İlk açılışta seç. Zor yol kendi 100 bölümüyle en baştan daha az hamle, daha fazla engel ve daha hızlı tuzaklarla başlar; Karanlık Bölgelerde yalnızca mıknatısının ışığını görürsün.
+
 Özellikler:
-• 100 bölüm, 5 dünya
+• Kolay ve Zor: iki ayrı 100 bölümlük yol, her birinin kendi ilerlemesi
+• Parlayan neon görünüm, canlı manyetik alan çizgileri
+• Kutup değiştirme, portallar, lazerler, taşıma bantları ve kırılabilir duvarlar
+• Zor yola özel Karanlık Bölgeler
 • Her gün yeni bir Günün Bölümü ve seri sayacı
 • Tek parmakla kontrol, kısa ve tatmin edici bölümler
 • Hamle sayısına göre 3 yıldız, en iyi skorunu geliştir

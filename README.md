@@ -1,4 +1,4 @@
-# MAGNET v5.7.7
+# MAGNET v6.0.0
 
 Tek parmakla manyetik fizik bulmacası.
 
@@ -41,6 +41,7 @@ Tek parmakla manyetik fizik bulmacası.
 - V5.7.5 Zor Mod'da daha fazla engel — Bölüm 1'den itibaren ekstra engel sayısı 2'den 3'e çıkarıldı, dünyaya göre üst sınır da bir artırıldı (`[3,5,4,4,3]`, önceden `[2,4,3,3,2]`). Yerleştirme algoritmasının deneme sayısı 80'den 200'e çıkarıldı ki daha kalabalık Usta dünyası bölümlerinde de istenen engel sayısına güvenilir şekilde ulaşılsın.
 - V5.7.6 Zor Mod maksimuma çıkarıldı — Bölüm 1 artık 5 ekstra engelle başlıyor (dünyaya göre üst sınır `[5,8,7,7,6]`), hamle payı gerektiğinde 1'e kadar düşebiliyor (önceki taban 2'ydi), hareketli engel hızı %80 arttı (önceden %50). Yerleştirme denemesi 500'e çıkarıldı. Her bölümün hâlâ tamamlanabilir olduğu hem geometrik olarak hem de gerçek bir çözüm denemesiyle (Bölüm 1, otomatik bir sürükleme dizisiyle) doğrulandı — zorluk fiziksel olarak imkansız bir bölüme dönüşmedi.
 - V5.7.7 Zor Mod'un engelleri artık gerçekten yolu kesiyor — Önceki sürümlerde ekstra engeller bölümde rastgele bir yere serpiliyordu; bu da kenarlardan tamamen boş bir "her şeyin etrafından dolan" koridoru bırakıyor ve tek bir düz sürüklemeyle hiçbir engele değmeden hedefe ulaşmak mümkün oluyordu. Artık ekstra engeller başlangıç-hedef doğrusu boyunca (dik yönde biraz saçılarak) yerleştiriliyor, yani doğrudan kestirme yolun üzerine düşüyorlar — dolanmak gerçekten gerekiyor. `tools/smoke_test.js`'e bu spesifik açığı bir daha açılmayacak şekilde kalıcı bir regresyon testi eklendi.
+- V6.0.0 MAGNET 2.0 · Neon Lab — Tamamen yenilenmiş neon görünüm (parlayan engeller, mıknatıs ile çekirdek arasında canlı manyetik alan çizgileri, kutba göre değişen aura, parçacıklar, çarpma sarsıntısı, dünyaya göre renklenen arka plan). Yeni mekanikler: kutup değiştirme (41+, ⇄ butonu), kırılabilir duvarlar (29–40), taşıma bantları (65–80), portallar (71–83), açılıp kapanan lazerler (85–100). Zor yolda her 4. bölüm Karanlık Bölge. Bölüm seçimi yılan şeklinde harita (boss düğümleriyle), HUD'da 3 yıldız hamle hedefi ve Zor/Karanlık etiketi, sonuç ekranında süre. Eskiden görünmez olan ve çekirdeği sıkıştırabilen 'bumper'lar artık görünür ve duvarlardan güvenli mesafede. Yeni `tools/solve_test.js`: bir bot 100+100 bölümü ve örnek günlük bölümleri gerçek fizikle oynayıp hepsinin bitirilebildiğini doğruluyor (release kapısına eklendi).
 
 ## Kontrol standardı
 Her sürümden önce preflight; ardından en az iki bağımsız QA turu. Hata çıkarsa sürüm sunulmaz.

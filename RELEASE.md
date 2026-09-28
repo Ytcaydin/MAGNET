@@ -1,3 +1,32 @@
+# MAGNET V6.0.0 — MAGNET 2.0 · Neon Lab
+
+## Kullanıcı isteği
+"Bu oyunu çok daha gelişmiş bir oyuna çevirebilir miyiz?" → önizleme tuvalinde 3 tema + yeni ekran/mekanik fikirleri gösterildi → "Tema seçimini sana bırakıyorum. Yapabileceğin en iyi oyunu yap." Tema olarak **Neon Lab** seçildi (mevcut fizik ve renk diliyle en uyumlu, en okunaklı olan).
+
+## Görsel yenileme (Neon Lab)
+- Yeni renderer: arka plan (dünyaya göre renklenen ışımalar, ızgara, vinyet) önbelleğe alınıyor; engeller/hedefler/portallar "geniş yarı saydam + ince parlak çizgi" ile parlıyor — Android WebView'de pahalı `shadowBlur` yerine. Ölçüm: en ağır sahne (Zor + Karanlık + lazer) ~1.2 ms/kare.
+- Mıknatıs ile aktif çekirdek arasında akan manyetik alan çizgileri (çekerken camgöbeği, iterken macenta); mıknatıs aurası çekerken içe, iterken dışa dalgalanıyor.
+- Parçacıklar renkli ve 'lighter' karışımlı, sert çarpmalarda hafif ekran sarsıntısı, lazer temasında kırmızı flaş.
+- Tüm HUD/overlay CSS'i neon temaya taşındı; HUD'a 3 yıldız hamle hedefi (`2/4`) ve Zor/Karanlık etiketi eklendi; sonuç ekranına süre eklendi.
+- Bölüm seçimi: 4'lü satırlardan oluşan yılan şeklinde harita, tamamlanan yol parlıyor, sıradaki bölüm nabız gibi atıyor, 20. bölüm boss düğümü.
+
+## Yeni mekanikler (her ikisi de Kolay ve Zor yolda)
+- **Kutup değiştirme** (41. bölümden itibaren + günlük bölüm): alt buton ⇄ mıknatısı çek/it arasında çevirir (hamle sayılmaz).
+- **Kırılabilir duvarlar** (29–40): 330 px/s üzeri normal hızla çarpınca kırılır.
+- **Taşıma bantları** (65–80): üzerindeki çekirdeğe sabit ivme; mıknatıstan zayıf, yani karşı konulabilir.
+- **Portallar** (71–83): turuncu↔mavi, hız yönünü koruyarak ışınlar, 0.5 sn bekleme ile ping-pong olmaz.
+- **Lazerler** (85–100, 93+ ikinci dikey lazer): 1.1 sn açık / 1.7 sn kapalı (Zor: 1.45 / 1.25), kapanmadan önce yanıp söner; açıkken temas çekirdeği başlangıca döndürür.
+- **Karanlık Bölge** (Zor yolda her 4. bölüm, 25 bölüm): yalnızca mıknatıs ve çekirdek çevresi görünür; hedef nabız gibi sinyal verir.
+- Her öğe sabit aday konumlardan ve başlangıç/hedef/mıknatıs/kapı/anahtar/diğer geometriye güvenli mesafe koşuluyla yerleştiriliyor; Zor yolun ekstra engelleri de bu öğelerden uzak duruyor. Günlük bölümlerde aynalama tüm yeni öğelere uygulanıyor.
+
+## Bulunan ve düzeltilen gizli hata: görünmez "bumper"lar
+- Eski sürümlerde Kutuplar/Hareket/Usta dünyalarında 1–2 adet **görünmez** yuvarlak sektirici vardı ve duvarlara yalnızca 30 px mesafeyle yerleşiyordu — 24 px'lik çekirdeğin sıkışıp kalabileceği 18–21 px'lik boşluklar oluşuyordu. Yeni çözülebilirlik botu bunu Kolay 58/60 ve Zor 68'de yakaladı (eski sürümde de aynı üç bölüm takılıyordu). Artık bumper'lar görünür (mor halka) ve duvarlardan en az bir çekirdek genişliği boşluk bırakıyor; başlangıç, hedef, mıknatıs, anahtar, portal ve lazerlerden de uzak duruyor.
+
+## Doğrulama
+- **Yeni `tools/solve_test.js`**: gerçek fizik motoru üzerinde, A* yolu izleyen basit bir "mıknatıs botu" her iki yolun 100'er bölümünü ve 60 günlük bölüm düzenini oynuyor → **260/260 tamamlandı**. Bot portal/lazer/bant bilmiyor, yani onun bitirebildiği bölümü bir insan rahatça bitirir. `verify_release.py`'ye eklendi (~3 sn).
+- `tools/smoke_test.js`: iki yol için geometri QA'sı (yeni öğelerin sınır kontrolleri dahil), yeni mekanik birim testleri (portal ışınlama, açık/kapalı lazer, bant ivmesi, hızlı/yavaş çarpmada duvar kırılması, kutup kilidi), mevcut tüm testler PASS.
+- Gerçek tarayıcı: 12 ekran görüntüsü (tema, her mekanik, Karanlık Bölge, harita, sonuç), kutup butonunun kilitli/açık davranışı, portal+bant bölümü (72) ve lazer bölümü (90) gerçek fare sürüklemeleriyle kazanıldı; konsol hatası yok. Java stub derlemesi temiz.
+
 # MAGNET V5.7.7
 
 ## Zor Mod'un engelleri artık gerçek kestirmeyi kesiyor (yol etrafından dolanma açığı kapatıldı)
