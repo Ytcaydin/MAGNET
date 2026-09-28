@@ -1,4 +1,4 @@
-# MAGNET v5.7.5
+# MAGNET v5.7.6
 
 Tek parmakla manyetik fizik bulmacası.
 
@@ -39,6 +39,7 @@ Tek parmakla manyetik fizik bulmacası.
 - V5.7.3 Kolay ve Zor artık iki ayrı 100 bölüm — Zor artık bir "mod" değil, kendi ilerlemesi ve kaldığı yeri hatırlayan bağımsız bir bölüm seti: Bölüm 1'den itibaren daha az hamle payı ve (Öğren dünyası dahil) fazladan engellerle başlıyor, sonrasında Kolay'dan daha hızlı zorlaşarak devam ediyor (hareketli engel hızı da bölüm verisine gömülü olarak daha yüksek). Kolay ise eskisi gibi düşük tempoda başlayıp aynı hızda zorlaşıyor. Ayarlar'daki "Zor Mod" anahtarı artık bu iki bölüm setini değiştiriyor; her ikisinin yıldızı/kaldığı bölüm ayrı ayrı kaydediliyor, birinden diğerine geçmek diğerinin ilerlemesini silmiyor.
 - V5.7.4 Zor Mod daha da zorlaştı, artık görünüyor — Hamle payı daha da sıkılaştı (%40 azalma + sabit -1), hareketli engel hızı %50 arttı (önceden %30), ve Zor Mod'un eklediği ekstra engeller artık Bölüm 1'den itibaren 2 tane ile başlayıp dünyaya göre 2-4'e kadar çıkıyor (önceden 1-3, Öğren dünyasında 1). En önemlisi: bu ekstra engeller artık kırmızı/kiremit renkte, ayrı bir vurguyla çiziliyor — oyuncu ilk bölümden itibaren "bunlar Zor Mod'un eklediği engeller" olduğunu bir bakışta anlıyor, sadece hamle sayısına bakıp tahmin etmiyor.
 - V5.7.5 Zor Mod'da daha fazla engel — Bölüm 1'den itibaren ekstra engel sayısı 2'den 3'e çıkarıldı, dünyaya göre üst sınır da bir artırıldı (`[3,5,4,4,3]`, önceden `[2,4,3,3,2]`). Yerleştirme algoritmasının deneme sayısı 80'den 200'e çıkarıldı ki daha kalabalık Usta dünyası bölümlerinde de istenen engel sayısına güvenilir şekilde ulaşılsın.
+- V5.7.6 Zor Mod maksimuma çıkarıldı — Bölüm 1 artık 5 ekstra engelle başlıyor (dünyaya göre üst sınır `[5,8,7,7,6]`), hamle payı gerektiğinde 1'e kadar düşebiliyor (önceki taban 2'ydi), hareketli engel hızı %80 arttı (önceden %50). Yerleştirme denemesi 500'e çıkarıldı. Her bölümün hâlâ tamamlanabilir olduğu hem geometrik olarak hem de gerçek bir çözüm denemesiyle (Bölüm 1, otomatik bir sürükleme dizisiyle) doğrulandı — zorluk fiziksel olarak imkansız bir bölüme dönüşmedi.
 
 ## Kontrol standardı
 Her sürümden önce preflight; ardından en az iki bağımsız QA turu. Hata çıkarsa sürüm sunulmaz.

@@ -1,3 +1,14 @@
+# MAGNET V5.7.6
+
+## Zor Mod'u makul olan en üst seviyeye çıkarma
+- Kullanıcı geri bildirimi: "Engel sayısını arttir. Zorluğu olabilecek en üst seviyeye çıkar. İlk bölümden o zorluğu hiç hissetmedim. Çok basit kalmış."
+- `hardExtraCount()`: taban sayı 3 → 5, dünya başına üst sınır `[3,5,4,4,3]` → `[5,8,7,7,6]`. Bölüm 1 artık **5** ekstra (kırmızı) engelle başlıyor — Öğren dünyasında hiç engel olmayan bir bölümden 5 engelli bir bölüme.
+- Hamle payı tabanı `Math.max(2,...)` → `Math.max(1,...)`: artık bazı erken bölümlerde 3 yıldız için tek hamle gerekiyor (yine de daha fazla hamleyle bitirmek mümkün — sadece yıldız kaybı oluyor, bölüm asla tıkanmıyor).
+- `HARD_MOVE_SPEED_MULT`: 1.5 → 1.8 (hareketli engeller artık %80 daha hızlı).
+- Yerleştirme denemesi 200 → 500'e çıkarıldı; daha yüksek engel sayılarında (Bölüm 91 gibi yoğun Usta dünyası bölümlerinde) hedefe güvenli mesafelerle ulaşmak için gerekliydi.
+- **Çözülebilirlik doğrulaması bu sefer sadece geometrik değil, fiziksel:** Bölüm 1'i gerçek fizik motoruyla, otomatik bir sürükle-bırak dizisiyle (engelleri gözeterek hedefe doğru küçük adımlarla ilerleyen bir script) 7 hamlede tamamladım — 5 engele rağmen bölüm hâlâ oynanabilir, sadece belirgin şekilde daha zor.
+- Doğrulama: bağımsız Node scripti ile 100 bölümün tamamında istenen ekstra engel sayısına ulaşıldığı, sınır dışı engel olmadığı ve Zor'un hep Kolay'dan sıkı kaldığı doğrulandı (0 hata). `tools/verify_release.py` → `tools/smoke_test.js` PASS, Java stub derlemesi temiz, Bölüm 1 ve 30'da gerçek tarayıcı ekran görüntüsü ve Bölüm 1'de gerçek bir çözüm denemesiyle teyit edildi.
+
 # MAGNET V5.7.5
 
 ## Zor Mod'da daha fazla engel, Bölüm 1'den itibaren
