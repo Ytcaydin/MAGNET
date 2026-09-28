@@ -1,3 +1,18 @@
+# MAGNET V6.2.0 — Mıknatıs da engellere takılıyor
+
+## Kullanıcı isteği
+Zor · Bölüm 11 ekran görüntüsüyle (mıknatıs bir çitin tam üstünde duruyor): "Magnet de engellere takılsın."
+
+## Değişiklik
+- **Katı mıknatıs** (`moveMagnet`, `MAG_R=17`): mıknatıs parmağı takip ediyor ama duvarlar, sağlam kırılabilir duvarlar, kapalı kapı ve hareketli bloklar onu durduruyor; yüzeyler boyunca kayıyor. Hareket ≤5 px'lik alt adımlara bölünüyor, böylece ince bir çitin içinden "tünel açıp" geçemiyor. Manyetik kuvvet duvarların içinden etki etmeye devam ediyor; sadece gövde geçemiyor. Mıknatıs gövdesi çarpışma dairesine uysun diye biraz küçültüldü (52×28 → 44×24).
+- **Geri bildirim**: parmak ile mıknatıs ayrıldığında aralarında kesikli bir "ip" ve parmak noktasında bir halka çiziliyor; mıknatıs bir engele takılıysa ikisi de macenta oluyor ve temas anında küçük bir kıvılcım ve titreşim var.
+- **Başlangıç noktası** (`magnetSpawn`, her bölüm için üretim sırasında): serbest alanda, çekirdeğe (kapı kapalıyken) ulaşılabilir ve her çekirdekten ~380 px uzakta; tercihen alt-orta. Eskiden mıknatıs hep (.5, .88)'de başlıyordu; bu, Zor çitlerinden birinin tam içine denk gelebiliyordu. Günlük bölümlerde aynalanıyor.
+- **Mıknatıs boyutunda doğrulama**: `levelReachable` şişirmesi ~23 px'e çıkarıldı. Sertifikalı her rota, 34 px'lik mıknatısın rahatça geçebileceği genişlikte, yani oyuncu çekirdeğe rota boyunca her zaman eşlik edebiliyor. (Bot, Zor 64'te çekirdeğin 38 px'lik bir kenar şeridinden geçmesi gerektiği ve mıknatısın ona eşlik edemediği bir düzen yakaladı; kural bu yüzden sıkılaştırıldı.) Zor bölümlerin neredeyse hepsinde yine 2–3 çit var.
+
+## Doğrulama
+- `tools/solve_test.js`: bot artık mıknatısı da A* ile duvarların etrafından sürüyor (duvara yaslanmışsa geri çekebiliyor, hedefe ulaşamıyorsa en yakın noktaya park ediyor) → **260/260**. 10 tohumluk dayanıklılık testinde yalnızca Zor 99/100 bazen ikinci denemeye kalıyor.
+- Gerçek tarayıcı: Zor 11'de mıknatıs bir engelin önünde durdu, macenta ip parmağa kadar çizildi; konsol hatası yok. `smoke_test.js` + `verify_release.py` PASS, Java stub derlemesi temiz.
+
 # MAGNET V6.1.0 — Zor yol artık gerçek bir labirent
 
 ## Kullanıcı geri bildirimi
