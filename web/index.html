@@ -53,7 +53,7 @@ let bumpers=[],gamePaused=false,magnetVelocity={x:0,y:0},lastPointer={x:0,y:0,t:
 const PLAYTEST_MODE = new URLSearchParams(location.search).get('playtest')==='1' || localStorage.getItem('magnet_playtest')==='1';
 const SOFT_LAUNCH_MODE = true;
 const SOFT_LAUNCH_VERSION = '2';
-const RELEASE_VERSION='5.7.6';
+const RELEASE_VERSION='5.7.7';
 /* ================= I18N (TR / EN) ================= */
 const I18N={
 hud_moves:['HAMLE','MOVES'],hud_level:['BÖLÜM','LEVEL'],hud_daily:['GÜNLÜK','DAILY'],paused:['OYUN DURAKLATILDI','GAME PAUSED'],
@@ -397,12 +397,22 @@ function hardExtraObstacles(q,capW0){
   const fixedPts=(q.fixed||[]).map(f=>f.p);
   const swept=(q.moving||[]).map(m=>{let x=m.p[0],y=m.p[1],w2=m.w,h2=m.h;if(m.axis==='x'){x-=m.amp;w2+=2*m.amp}else{y-=m.amp;h2+=2*m.amp}return[x,y,w2,h2]});
   const blocks=(q.o||[]).concat(q.ice||[]).concat(swept);
+  // V5.7.7: earlier versions scattered extra obstacles anywhere in the play field, which left the whole
+  // border open as a free "go around everything" corridor — solvable in a single wide curving drag that
+  // never touched an obstacle. Candidates are now sampled along the start->target line (with perpendicular
+  // spread) so the extra obstacles actually sit across the direct shortcut and force real detours.
+  const [sx,sy]=q.start,[tx,ty]=q.target;
+  const dx=tx-sx,dy=ty-sy,len=Math.hypot(dx,dy)||1;
+  const ux=dx/len,uy=dy/len,qx=-uy,qy=ux;
   const extra=[];let tries=0;
-  while(extra.length<cnt&&tries<500){
+  while(extra.length<cnt&&tries<600){
     tries++;
     const w2=.045+r()*.035,h2=.045+r()*.035;
-    const x=.14+r()*(.72-w2),y=.14+r()*(.72-h2);
-    const cx=x+w2/2,cy=y+h2/2;
+    const t=.10+r()*.80;
+    const spread=(r()*2-1)*.30;
+    const cx=sx+dx*t+qx*spread, cy=sy+dy*t+qy*spread;
+    const x=cx-w2/2, y=cy-h2/2;
+    if(x<.04||y<.04||x+w2>.96||y+h2>.96)continue;
     if(pts.some(p=>Math.hypot(cx-p[0],cy-p[1])<.11))continue;
     if(fixedPts.some(p=>Math.hypot(cx-p[0],cy-p[1])<.09))continue;
     if(q.gate&&cx>q.gate.p[0]-.06&&cx<q.gate.p[0]+q.gate.w+.06&&cy>q.gate.p[1]-.06&&cy<q.gate.p[1]+q.gate.h+.06)continue;

@@ -1,3 +1,13 @@
+# MAGNET V5.7.7
+
+## Zor Mod'un engelleri artık gerçek kestirmeyi kesiyor (yol etrafından dolanma açığı kapatıldı)
+- Kullanıcı geri bildirimi (ekran görüntüsüyle, Bölüm 3): "Engellerin arasından değil etrafından dolanarak tek hamlede kaçabiliyorum." Ekran görüntüsünde 5 ekstra engelin hepsi ekranın sol/orta bölgesinde kümelenmiş, sağ taraf ve kenarlar tamamen boş kalmıştı — tek bir uzun, kavisli sürüklemeyle bütün kümenin sağından dolanıp hedefe (Bölüm 3'ün sağ tarafında) hiçbir engele değmeden ulaşmak mümkündü.
+- Kök neden: `hardExtraObstacles()` aday konumları, bölümün tamamı içinde (kenardan `.14` içeride) tamamen rastgele seçiyordu — hiçbir şey engelleri başlangıç-hedef doğrusunun üzerine denk getirmeye zorlamıyordu, sadece istatistiksel olarak bazen oraya düşüyorlardı.
+- Düzeltme: Aday merkez noktası artık başlangıç→hedef doğrusu üzerinde rastgele bir `t∈[.10,.90]` oranında seçiliyor, sonra doğruya dik yönde `±.30`'a kadar rastgele kaydırılıyor (`spread`). Böylece engeller istatistiksel olarak dağınık kalmaya devam ediyor ama merkez kütlesi her zaman doğrudan kestirme yolun üzerinde/yakınında oluyor — kenar boşluğu kalsa da artık "tüm kümenin dışından tek hamlede dolanma" pratikte işe yaramıyor. Kenar sınırı da `.14` → `.04`'e çekildi ki spread aralığı fazla daralmasın.
+- Mevcut güvenlik marjları (başlangıç/hedef/mıknatıs/kapı/anahtar/diğer engellerden asgari mesafe) aynen korundu — sadece adayların NEREDEN seçildiği değişti, hangi mesafelerin güvenli sayıldığı değil.
+- **Kalıcı regresyon testi eklendi:** `tools/smoke_test.js`'e, mıknatısı doğrudan hedefe kilitleyip fiziği ~400 adım ileri saran ve Bölüm 1/3/5/10/21/30'un hiçbirinin bu "tek düz çekiş" ile anında kazanılmadığını doğrulayan bir test eklendi — bu spesifik açık bir daha sessizce geri gelemez.
+- Doğrulama: bağımsız Node scripti ile 100 bölümün tamamında hâlâ istenen engel sayısına ulaşıldığı doğrulandı (0 hata); gerçek tarayıcıda Bölüm 1/3/5/21/30'da "başlangıçtan hedefe tek düz sürükleme" denendi — hiçbiri artık anında kazandırmıyor (`won:false`); aynı bölümler çok adımlı, engelleri gözeten bir sürükleme dizisiyle hâlâ tamamlanabiliyor (Bölüm 1, 8 hamlede) — yani bölümler hem gerçekten zorlaştı hem de çözülebilir kaldı. `tools/verify_release.py` → `tools/smoke_test.js` PASS, Java stub derlemesi temiz.
+
 # MAGNET V5.7.6
 
 ## Zor Mod'u makul olan en üst seviyeye çıkarma

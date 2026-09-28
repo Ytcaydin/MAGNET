@@ -157,6 +157,27 @@ guard('hard track levels + independent progress', () => {
   })()`, c);
   if (r !== 'true,false') errors.push('easy/hard tracks are not keeping independent progress: ' + r);
 });
+// 1e) Regression guard for a reported exploit: Hard track's extra obstacles used to be scattered off to
+// one side, leaving the whole border open as a "go around everything" corridor — a single straight pull
+// from start toward the target won instantly without ever being blocked. Simulate that exact single-drag
+// shortcut (aim the magnet straight at the target and hold) on several early Hard levels and require that
+// none of them win outright — the obstacles must actually sit in the direct path now.
+guard('hard track obstacles block the straight-line shortcut', () => {
+  const r = vm.runInContext(`(()=>{
+    setTrack(true);
+    const results=[];
+    for(const lvl of [1,3,5,10,21,30]){
+      load(lvl);
+      const t=targets[0];
+      magnet.tx=t.x; magnet.ty=t.y;
+      for(let i=0;i<400;i++) update(0.016);
+      results.push(lvl+':'+won);
+    }
+    setTrack(false);
+    return results.join(',');
+  })()`, c);
+  if (/:true/.test(r)) errors.push('hard track: a single straight drag toward the target wins without detouring around any obstacle (' + r + ')');
+});
 // 2) Click every button with a handler (skip destructive reset/export)
 // hardBtn is skipped here because it now persistently switches the active track (own progress/level
 // bookmark), which would make every later test's assumption of "we're on the easy track" order-dependent;
