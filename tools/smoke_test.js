@@ -194,6 +194,18 @@ guard('v6 mechanics physics', () => {
   })()`, c);
   if (r) errors.push('v6 mechanics misbehave: ' + r);
 });
+guard('v6.3 electrified hard walls + magnet-only core', () => {
+  const r = vm.runInContext(`(()=>{
+    const o={},park=()=>{magnet.x=magnet.tx=W-20;magnet.y=magnet.ty=H-20};
+    const shoot=(v)=>{const b=balls[0],free=(x,y)=>obstacles.every(o=>Math.hypot(x-clamp(x,o.x,o.x+o.w),y-clamp(y,o.y,o.y+o.h))>b.r+1.5),w=obstacles.find(o=>o.x>40&&free(o.x-b.r-2,o.y+o.h/2)&&free(o.x-b.r-40,o.y+o.h/2));b.cd=0;b.x=w.x-b.r-2;b.y=w.y+w.h/2;b.vx=v;b.vy=0;park();zaps=0;for(let i=0;i<8;i++)update(1/60);return zaps};
+    setTrack(true);load(3);o.hardFastZaps=shoot(400)===1;o.hardSlowGraze=shoot(30)===0;
+    setTrack(false);load(3);o.easyNoZap=shoot(400)===0;
+    // core can never be carried inside the magnet: parked on top of it, it is pushed out to the magnet's face
+    load(1);{const b=balls[0];magnet.x=magnet.tx=b.x;magnet.y=magnet.ty=b.y+2;for(let i=0;i<40;i++)update(1/60);o.noGlue=Math.hypot(b.x-magnet.x,b.y-magnet.y)>CORE_GAP*.7}
+    return Object.entries(o).filter(([k,v])=>!v).map(([k])=>k).join(',');
+  })()`, c);
+  if (r) errors.push('v6.3 physics misbehave: ' + r);
+});
 // 2) Click every button with a handler (skip destructive reset/export)
 // hardBtn is skipped here because it now persistently switches the active track (own progress/level
 // bookmark), which would make every later test's assumption of "we're on the easy track" order-dependent;

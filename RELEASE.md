@@ -1,3 +1,26 @@
+# MAGNET V6.3.0 — Çekirdeği sadece mıknatıs oynatır; Zor duvarlar elektrikli
+
+## Kullanıcı isteği
+"Zorluk hâlâ çok basit. Ayrıca çekirdeği parmak ile değil sadece manyetik ile oynatmak mümkün olsun. Çekirdeğe dokununca manyetik yaklaşmasın."
+
+## Kök neden
+- Dokunulan nokta doğrudan mıknatısın hedefiydi: çekirdeğin üstüne basınca mıknatıs oraya uçuyor, çekirdek mıknatısın merkezine yapışıyor ve parmakla taşınıyordu. Pratikte çekirdeği parmak sürüklüyordu.
+- Oyunda kaybetme durumu yoktu: duvarlar sadece sektiriyordu, hamle sayısı sadece yıldızı etkiliyordu. Çekirdeği hızla duvarlara sürterek her bölüm bitirilebiliyordu.
+
+## Değişiklik
+- **Göreli sürükleme**: mıknatıs artık parmağın altına zıplamıyor; parmak ekranın neresinde olursa olsun mıknatıs parmağın *hareketini* kopyalıyor (`grab` ofseti). Çekirdeğe dokunmak hiçbir şey yapmıyor.
+- **Çekirdek mıknatısın içine giremiyor** (`CORE_GAP=30`, `CORE_REPEL`): yakın alanda manyetik itme var; çekirdek mıknatısın yüzüne tutunuyor ama merkezine yapışıp taşınamıyor. Çekirdeği yalnızca manyetik kuvvet hareket ettiriyor.
+- **Zor: elektrikli duvarlar** (`zapHit`, `zapCore`, `ZAP_SPEED=70`): Zor yolda çekirdek herhangi bir duvara veya hareketli bloğa ~70 px/s'den hızlı çarparsa kıvılcımla başlangıca dönüyor (lazerle aynı ceza). Çok yavaş bir sürtünme affediliyor, gerçek her çarpma değil. Zor duvarların içinde titreşen elektrik çizgileri çiziliyor; ilk 3 Zor bölümde ve ilk çarpmada uyarı gösteriliyor.
+- **Adil koridorlar**: Zor seviyeler artık daha geniş güvenlik payıyla doğrulanıyor (`ZAP_RX/RY`, her yandan ~31 px → her sertifikalı koridor ≥ ~62 px). Duvara ~60 px'ten yakın sabit mıknatıslar Zor'da kaldırılıyor (bir çekici mıknatıs çekirdeği elektrikli duvarın dibine park edebiliyordu — bot bunu Zor 51'de yakaladı).
+- Eğitim/yardım metinleri yeni kontrole göre güncellendi ("herhangi bir yerde kaydır").
+- **Tutma sönümü** (`CORE_HOLD`, `HOLD_DAMP`): mıknatısın yüzündeki çekirdeğin titreşimi yavaşça sönüyor; mıknatıs yavaş hareket ettirilirse çekirdek onunla birlikte süzülüyor, sert bir hareket ise onu fırlatıyor (ve Zor'da duvara çarptırıyor).
+- **Hareketli bloklar Zor'da öldürmüyor** ama çekirdeği ve mıknatısı itiyor (çoğu zaman elektrikli bir duvara). Zor'daki hız çarpanı 1.8 → 1.25'e indi; aksi halde yavaş taşınan bir çekirdekle zamanlama imkânsızdı. Zor doğrulaması artık bir rotanın, her hareketli blok ortada VE salınımının iki ucunda donmuşken de var olmasını istiyor (bot Zor 66'da, bloğun koridoru tamamen kapattığı bir düzen yakaladı).
+
+## Doğrulama
+- `tools/solve_test.js`: Zor için yeni "taşıma" stratejisi (çekirdeği mıknatısın yüzünde tutup rotada yavaşça yürütmek, hareketli blok yoldan çekilene kadar beklemek sonra hızla geçmek) + önceki hızlı/frenli stratejiler; Zor'da 6 farklı ayarla deneme. **260/260** (Kolay 130, Zor 130). Yeni `--hard`, `--easy`, `--only=HARD-12,...` seçenekleri.
+- `smoke_test.js`: yeni koruma — Zor'da hızlı çarpma başa döndürüyor, yavaş sürtünme döndürmüyor, Kolay'da hiç döndürmüyor, çekirdek mıknatısın içine park edilemiyor.
+- Gerçek tarayıcı: çekirdeğe basılı tutunca mıknatıs yerinden oynamadı; parmak kaydırılınca mıknatıs kendi yerinden aynı yönde gitti. Konsol hatası yok. `verify_release.py` PASS, Java stub derlemesi temiz.
+
 # MAGNET V6.2.0 — Mıknatıs da engellere takılıyor
 
 ## Kullanıcı isteği
